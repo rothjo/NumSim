@@ -1,0 +1,4 @@
+# settings
+endTime=1.5          # duration of the simulation
+
+re = 1000            # Reynolds number

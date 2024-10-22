@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include "settings.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +17,8 @@ int main(int argc, char *argv[])
 
   // print message
   std::cout << "Filename: \"" << filename << "\"" << std::endl;
+
+  loadFromFile(filename);
 
   return EXIT_SUCCESS;
 }
