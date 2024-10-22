@@ -30,3 +30,52 @@
 *.exe
 *.out
 *.app
+
+# Build
+build/*
+!build/.gitkeep
+
+# Output files
+build/out/
+
+# CLion
+*.idea
+cmake-build-debug
+
+# VSCode
+.vscode/
+out
+
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+CMakeUserPresets.json
+
+# Ignore build directories
+build/
+CMakeFiles/
+CMakeCache.txt
+
+# Ignore auto-generated CMake files
+Makefile
+cmake_install.cmake
+*.make
+*.cmake
+
+# Ignore executables and object files
+*.exe
+*.out
+*.o
+*.a
+*.so
+
+# Ignore logs
+*.log
