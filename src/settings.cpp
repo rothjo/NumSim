@@ -2,6 +2,12 @@
 #include <fstream>
 #include <iomanip>
 
+/**
+ * Parse a text file with settings, each line contains "<parameterName> = <value>"
+ * 
+ * @param filename name of the file to parse
+ * @return void
+ */
 void Settings::loadFromFile(std::string filename)
 {
   // open file
@@ -17,6 +23,7 @@ void Settings::loadFromFile(std::string filename)
   // loop over lines of file
   for (int lineNo = 0;; lineNo++)
   {
+    // check if end of file is reached
     if (file.eof()) {
       break;
     }
@@ -24,31 +31,38 @@ void Settings::loadFromFile(std::string filename)
     std::string line;
     getline(file, line);
 
- 
-    line.erase(0, line.find_first_not_of(" \t")); // remove whitespace at beginning of line
+    // remove whitespace at beginning of line
+    line.erase(0, line.find_first_not_of(" \t")); 
 
+    // if first character is a '#', skip line
     if (line[0] == '#')
-      continue; // if first character is a '#', skip line
+      continue; 
 
+    // if line does not contain a '=' sign, skip line
     if (line.find('=') == std::string::npos)
-      continue; // if line does not contain a '=' sign, skip line
+      continue; 
 
+    // extract and isolate parameter name
     std::string parameterName = line.substr(0, line.find('='));
-
     if (parameterName.find_first_of(" \t") != std::string::npos)
     {
       parameterName.erase(parameterName.find_first_of(" \t"));
     }
 
+    // extract and isolate value
     std::string value = line.substr(line.find('=') + 1);
 
-    value.erase(0, value.find_first_not_of(" \t")); // remove whitespace at beginning of value
+    // remove whitespace at beginning of value
+    value.erase(0, value.find_first_not_of(" \t"));
+    // remove comments at end of value
     if (value.find_first_of("#") != std::string::npos)
-      value.erase(value.find_first_of("#"));          // remove comments at end of value
-    value.erase(value.find_last_not_of(" \t") + 1); // remove whitespace at end of value
+      value.erase(value.find_first_of("#"));
+    // remove whitespace at end of value
+    value.erase(value.find_last_not_of(" \t") + 1); 
     
+    // match parameterName and value to given variables
     if (parameterName == "endTime"){
-      endTime = atof(value.c_str()); // set endTime to parsed value
+      endTime = atof(value.c_str());
     }
     else if (parameterName == "physicalSizeX"){ 
       physicalSize[0] = atof(value.c_str());
@@ -133,6 +147,11 @@ void Settings::loadFromFile(std::string filename)
   }
 }
 
+/**
+ * Output all settings to console
+ * 
+ * @return void
+ */
 void Settings::printSettings()
 {
   std::cout << "Settings: " << std::endl
