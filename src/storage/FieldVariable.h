@@ -10,7 +10,7 @@
 class FieldVariable : public Array2D {
 public:
     //! constructor
-    FieldVariable(std::array<int,2> size, std::array<int,2> origin, std::array<int,2> meshWidth);
+    FieldVariable(std::array<int,2> size, std::array<double,2> origin, std::array<double,2> meshWidth);
 
     /**
      * Interpolate FieldVariable at given position x and y
@@ -18,7 +18,7 @@ public:
     double interpolateAt(double x, double y) const;
 
 private:
-    const std::array<int,2> origin_; //< origin of computational domain
-    const std::array<int,2> meshWidth_; //< meshWidth in x and y direction
+    const std::array<double,2> origin_; //< origin of computational domain
+    const std::array<double,2> meshWidth_; //< meshWidth in x and y direction
 };
   
