@@ -9,7 +9,7 @@
 
 class Discretization : public StaggeredGrid {
 public:
-    Discretization(std::array<double,2> meshWidth, Settings settings);
+    Discretization(std::array<int, 2> nCells, std::array<double,2> meshWidth);
 
     /**
      * Compute the derivative of u^2 in x-direction
