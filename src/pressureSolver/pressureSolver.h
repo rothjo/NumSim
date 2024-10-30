@@ -28,6 +28,11 @@ protected:
      */
     virtual void computeResidualNorm();
 
+    /**
+     * Get the euclidean residual norm
+     */
+    double residualNorm();
+
     std::shared_ptr<Discretization> discretization_;
     double epsilon_;
     int maximumNumberOfIterations_;
