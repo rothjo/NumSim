@@ -31,6 +31,9 @@
 *.out
 *.app
 
+#sigdeables
+settings.json
+
 # Build
 build/*
 !build/.gitkeep
