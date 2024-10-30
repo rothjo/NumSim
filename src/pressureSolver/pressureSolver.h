@@ -23,9 +23,15 @@ protected:
      */
     void setBoundaryValues();
 
+    /**
+     * Compute residual norm for possible exit condition
+     */
+    virtual void computeResidualNorm();
+
     std::shared_ptr<Discretization> discretization_;
     double epsilon_;
     int maximumNumberOfIterations_;
+    double residualNorm2_;
 
 
 
