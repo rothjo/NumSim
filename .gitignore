@@ -49,6 +49,7 @@ cmake-build-debug
 .vscode/
 out
 
+src/CMakeLists.txt
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
