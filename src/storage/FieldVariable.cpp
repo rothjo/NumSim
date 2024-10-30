@@ -17,7 +17,7 @@ double FieldVariable::interpolateAt(double x, double y) const {
     assert(0.0 <= x && x < size_[0]*meshWidth_[0]);
     assert(0.0 <= y && y < size_[1]*meshWidth_[1]);
 
-    // Find the indicies i and j of the corresponding cells, we are looking for the buttom left point of the cell
+    // Find the indicies i and j of the corresponding cells, we are looking for the bottom left point of the cell
     int i = (x - origin_[0]) / meshWidth_[0];
     int j = (y - origin_[1]) / meshWidth_[1];
 
@@ -31,20 +31,20 @@ double FieldVariable::interpolateAt(double x, double y) const {
 
     double xLeft = origin_[0] + i * meshWidth_[0];
     double xRight = xLeft + meshWidth_[0];
-    double yButtom = origin_[1] + j * meshWidth_[1];
-    double yTop = yButtom + meshWidth_[1];
+    double yBottom = origin_[1] + j * meshWidth_[1];
+    double yTop = yBottom + meshWidth_[1];
 
 
     // Use bilinear interpolation to find the interpolated value
 
     // First, interpolate in x-direction for the bottom horizontal neighboring line 
-    double interpolateButtom = (xRight - x) / (xRight - xLeft) * valueLeftBottom + (x - xLeft) / (xRight - xLeft) * valueRightBottom;
+    double interpolateBottom = (xRight - x) / (xRight - xLeft) * valueLeftBottom + (x - xLeft) / (xRight - xLeft) * valueRightBottom;
     
     // Interpolate in x-direction for the top horizontal neighboring line 
     double interpolateTop = (xRight - x) / (xRight - xLeft) * valueLeftTop + (x - xLeft) / (xRight - xLeft) * valueRightTop;
 
     // Interpolate in y-direction
-    double interpolation = (yTop - y) / (yTop - yButtom) * interpolateButtom + (y - yButtom) / (yTop - yButtom) * interpolateTop;
+    double interpolation = (yTop - y) / (yTop - yBottom) * interpolateBottom + (y - yBottom) / (yTop - yBottom) * interpolateTop;
 
     return interpolation;
 
