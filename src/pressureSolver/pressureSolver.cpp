@@ -13,6 +13,6 @@ PressureSolver::PressureSolver(std::shared_ptr<Discretization> discretization, d
 
 }
 
-void PressureSolver::setBoundaryValues(){
-
+void PressureSolver::setBoundaryValues() {
+    
 }
