@@ -19,7 +19,7 @@ public:
      * @return derivative of u^2 in x-direction
      */
 
-    virtual double computeDu2Dx (int i, int j) const;
+    virtual double computeDu2Dx (int i, int j) const = 0;
 
     /**
      * Compute the derivative of u*v in x-direction
@@ -29,7 +29,7 @@ public:
      * @return derivative of u*v in x-direction
      */
 
-    virtual double computeDuvDx (int i, int j) const;
+    virtual double computeDuvDx (int i, int j) const = 0;
 
     /**
      * Compute the derivative of p in x-direction
@@ -49,7 +49,7 @@ public:
      * @return derivative of v^2 in y-direction
      */
 
-    virtual double computeDv2Dy (int i, int j) const;
+    virtual double computeDv2Dy (int i, int j) const = 0;
 
     /**
      * Compute the derivative of u*v in y-direction
@@ -59,7 +59,7 @@ public:
      * @return derivative of u*v in y-direction
      */
 
-    virtual double computeDuvDy (int i, int j) const;
+    virtual double computeDuvDy (int i, int j) const = 0;
 
     /**
      * Compute the derivative of p in y-direction

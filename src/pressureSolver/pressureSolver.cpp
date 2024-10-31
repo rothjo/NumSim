@@ -14,8 +14,23 @@ PressureSolver::PressureSolver(std::shared_ptr<Discretization> discretization, d
 
 }
 
-void PressureSolver::setBoundaryValues() {
 
+/**
+ * Set boundary values for the pressure, needs to be called after every iteration
+ * Go through each boundary, e.g. left boundary p(Ibegin -1, j) = p(Ibegin, j) for all j
+ */
+void PressureSolver::setBoundaryValues() {
+    // Set pressure boundary values for the left and right side of the grid
+    for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
+        discretization_->p(0, j) = discretization_->p(1, j);
+        discretization_->p(discretization_->pIEnd(), j) = discretization_->p(discretization_->pIEnd() - 1, j);
+    }
+
+    // Set pressure boundary values for the upper and lower side of the grid
+    for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
+        discretization_->p(i, 0) = discretization_->p(i, 1);
+        discretization_->p(i, discretization_->pJEnd()) = discretization_->p(i, discretization_->pJEnd() - 1);
+    }
 }
 
 /**
@@ -26,15 +41,18 @@ void PressureSolver::computeResidualNorm() {
     double residualNorm2 = 0.0;
     const double dx_2 = pow(discretization_->dx(), 2);
     const double dy_2= pow(discretization_->dy(), 2);
-    const int N = discretization_->nCells()[0] * discretization_->nCells()[1]; // Number of points used to compute norm
+    const int N = 
+            (discretization_->pIBegin() - discretization_->pIEnd()) * (discretization_->pJBegin() - discretization_->pJEnd()); // Number of points used to compute norm
 
     // Compute l^2 norm by taking into account rhs and u_xx, u_yy
 
     for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
         for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
 
-            double p_xx = (discretization_->p(i + 1, j) - 2 * discretization_->p(i, j) + discretization_->p(i - 1, j)) / dx_2;
-            double p_yy = (discretization_->p(i, j + 1) - 2 * discretization_->p(i, j) + discretization_->p(i, j - 1)) / dy_2;
+            double p_xx = 
+                    (discretization_->p(i + 1, j) - 2 * discretization_->p(i, j) + discretization_->p(i - 1, j)) / dx_2;
+            double p_yy = 
+                    (discretization_->p(i, j + 1) - 2 * discretization_->p(i, j) + discretization_->p(i, j - 1)) / dy_2;
             residualNorm2 += pow(discretization_->rhs(i, j) - p_xx - p_yy, 2);
         }
     }
