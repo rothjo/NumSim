@@ -2,18 +2,20 @@
 
 #include "pressureSolver.h"
 
-
-
-class GaussSeidel : public PressureSolver {
+/**
+ * Implementation of the sor pressure solver. 
+ */
+class SOR : public PressureSolver {
 public:
-    GaussSeidel(std::shared_ptr<Discretization> discretization, double epsilon, int maximumNumberOfIterations);
-
+    SOR(std::shared_ptr<Discretization>, double epsilon, int maximumNumberOfIterations, double omega);
+    
     /**
      * Solve poisson problem for the pressure, using the rhs and p field variables in staggeredGrid
      */
     void solve() override;
 
 private:
+    double omega_;
     void computeResidualNorm() override;
 };
   
