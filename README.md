@@ -1,4 +1,4 @@
 # NumSim
-LME (Legendary Master Eierlecker) is a multivariable solving Ansatz for Dimis Popo
+implementation for NumSim
 
 Geht mal das durch: https://learngitbranching.js.org/?locale=de_DE
