@@ -1,10 +1,9 @@
-#include "gaussSeidel.h"
+#include "sor.h"
 
+SOR::SOR(std::shared_ptr<Discretization> discretization, double epsilon, int maximumNumberOfIterations, double omega) :
+    PressureSolver(discretization, epsilon, maximumNumberOfIterations), omega_(omega) {}
 
-GaussSeidel::GaussSeidel(std::shared_ptr<Discretization> discretization, double epsilon, int maximumNumberOfIterations) :
-    PressureSolver(discretization, epsilon, maximumNumberOfIterations) {}
-
-void GaussSeidel::solve() {
+void SOR::solve() {
     const double dx2 = discretization_->dx() * discretization_->dx();
     const double dy2 = discretization_->dy() * discretization_->dy();
     const double k = (dx2 * dy2) / (2.0 * (dx2 + dy2));
@@ -15,13 +14,19 @@ void GaussSeidel::solve() {
     // applyBoundaryValues();
     // computeResidualNorm();
 
+    // TODO: change implementation to SOR
     while (residualNorm2_ > eps2 && iteration < maximumNumberOfIterations_) {
         ++iteration;
         for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
             for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
                 double px = (discretization_->p(i + 1, j) + discretization_->p(i - 1, j)) / dx2;
                 double py = (discretization_->p(i, j + 1) + discretization_->p(i, j - 1)) / dy2;
-                discretization_->p(i, j) = k * (px + py - discretization_->rhs(i, j));
+
+
+                double correction = k * (px + py - discretization_->rhs(i, j)) - discretization_->p(i, j);
+                discretization_->p(i,j) += omega_ * correction
+                k * (px + py - discretization_->rhs(i, j));
+                // discretization_->p(i, j) = k * (px + py - discretization_->rhs(i, j));
             }
         }
         setBoundaryValues();
@@ -30,6 +35,5 @@ void GaussSeidel::solve() {
         
     }
     this->numberOfIterations_ = iteration;
-
 }
     

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <discretization/discretization.h>
+#include "../discretization/discretization.h"
 
 
 /**
