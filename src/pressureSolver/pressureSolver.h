@@ -37,10 +37,11 @@ protected:
     double epsilon_;
     int maximumNumberOfIterations_;
     double residualNorm2_;
+    int numberOfIterations_;
 
 
 
 
 
 
-}
+};

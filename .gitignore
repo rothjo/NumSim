@@ -31,6 +31,9 @@
 *.out
 *.app
 
+#sigdeables
+settings.json
+
 # Build
 build/*
 !build/.gitkeep
@@ -46,6 +49,7 @@ cmake-build-debug
 .vscode/
 out
 
+src/CMakeLists.txt
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
