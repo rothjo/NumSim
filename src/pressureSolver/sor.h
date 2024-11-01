@@ -3,7 +3,7 @@
 #include "pressureSolver.h"
 
 /**
- * Implementation of the sor pressure solver. 
+ * Implementation of the sor pressure solver.
  */
 class SOR : public PressureSolver {
 public:

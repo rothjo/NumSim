@@ -38,10 +38,4 @@ protected:
     int maximumNumberOfIterations_;
     double residualNorm2_;
     int numberOfIterations_;
-
-
-
-
-
-
 };
