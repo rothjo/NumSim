@@ -26,11 +26,11 @@ int main(int argc, char *argv[])
 
 
 
-    for (int j = nCells[1]-1; j >= 0; --j) {
-        for (int i = 0; i < nCells[0]; ++i) {
-          if (i == 0 || i == nCells[0] - 1) {
+    for (int j = disc->pJEnd(); j >= 0; --j) {
+        for (int i = 0; i < disc->pIEnd()+1; ++i) {
+          if (i == 0 || i == disc->pIEnd() ) {
             disc->p(i,j) = 0;
-          } else if (j == 0 || j == nCells[1] - 1){
+          } else if (j == 0 || j == disc->pJEnd()){
             disc->p(i,j) = 0;
           } else{
             disc->p(i,j) = 1;
@@ -40,8 +40,21 @@ int main(int argc, char *argv[])
         std::cout << std::endl;
     }
 
-    for (int j = nCells[1]-1; j >= 0; --j) {
-        for (int i = 0; i < nCells[0]; ++i) {
+    std::cout << std::endl;
+    
+    for (int j = disc->pJBegin(); j < disc->pJEnd(); j++) {
+        disc->p(0, j) = disc->p(1, j);
+        disc->p(disc->pIEnd(), j) = disc->p(disc->pIEnd() - 1, j);
+    }
+
+    // Set pressure boundary values for the upper and lower side of the grid
+    for (int i = disc->pIBegin(); i < disc->pIEnd(); i++) {
+        disc->p(i, 0) = disc->p(i, 1);
+        disc->p(i, disc->pJEnd()) = disc->p(i, disc->pJEnd() - 1);
+    }
+
+    for (int j = disc->pJEnd(); j >= 0; --j) {
+        for (int i = 0; i < disc->pIEnd()+1; ++i) {
           std::cout << disc->p(i, j) << " ";
         }
         std::cout << std::endl;
