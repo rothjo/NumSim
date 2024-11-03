@@ -24,9 +24,7 @@ void SOR::solve() {
 
 
                 double correction = k * (px + py - discretization_->rhs(i, j)) - discretization_->p(i, j);
-                discretization_->p(i,j) += omega_ * correction
-                k * (px + py - discretization_->rhs(i, j));
-                // discretization_->p(i, j) = k * (px + py - discretization_->rhs(i, j));
+                discretization_->p(i,j) += omega_ * correction;
             }
         }
         setBoundaryValues();

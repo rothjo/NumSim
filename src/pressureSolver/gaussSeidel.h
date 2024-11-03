@@ -3,7 +3,10 @@
 #include "pressureSolver.h"
 
 
-
+/**
+ * Implementation of the Gauss-Seidel pressure solver.
+ * Implements the solve method of the PressureSolver interface.
+ */
 class GaussSeidel : public PressureSolver {
 public:
     GaussSeidel(std::shared_ptr<Discretization> discretization, double epsilon, int maximumNumberOfIterations);
