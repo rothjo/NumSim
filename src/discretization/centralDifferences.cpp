@@ -16,6 +16,7 @@ double CentralDifferences::computeDv2Dy(int i, int j) const {
 }
 
 double CentralDifferences::computeDuvDx(int i, int j) const {
+    // CONVENTION: DIRECTION_POSITION
     const double v_left = (v(i,j) + v(i-1,j)) / 2.0;
     const double v_right = (v(i,j) + v(i+1,j)) / 2.0;
 
