@@ -1,4 +1,4 @@
-#include "StaggeredGrid.h"
+#include "staggeredGrid.h"
 
 // nCells has to be N + 2, where N is the number of cells in x or y direction
 StaggeredGrid::StaggeredGrid(std::array<int, 2> nCells, std::array<double, 2> meshWidth)

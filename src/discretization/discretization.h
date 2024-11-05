@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include "StaggeredGrid.h"
+#include "staggeredGrid.h"
 
 /**
  * Calculate derivatives

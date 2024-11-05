@@ -3,7 +3,11 @@
 // Include necessary .h and bibliotecas
 #include "discretization/discretization.h"
 #include "discretization/centralDifferences.h"
+#include "discretization/donorCell.h"
 #include "pressureSolver/pressureSolver.h"
+#include "pressureSolver/gaussSeidel.h"
+#include "pressureSolver/sor.h"
+#include "output_writer/output_writer.h"
 #include "output_writer/output_writer_paraview.h"
 #include "output_writer/output_writer_text.h"
 #include "settings.h"
