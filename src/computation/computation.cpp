@@ -5,7 +5,33 @@
  * 
  */
 void Computation::initialize(int argc, char* argv[]) {
-    // Parse the settings from the file that is given as the only command line argument
+    // load settigns from file
+    settings_ = Settings();
+    settings_.loadFromFile("parameters.txt");
+
+    // init meshWidth
+    meshWidth_ = {settings_.physicalSize[0] / settings_.nCells[0], settings_.physicalSize[1] / settings_.nCells[1]};
+
+    // init discretization
+    if (settings_.useDonorCell) {
+        discretization_ = std::make_shared<DonorCell>(settings_.nCells, meshWidth_, settings_.alpha);
+    } else {
+        discretization_ = std::make_shared<CentralDifferences>(settings_.nCells, meshWidth_);
+    }
+
+    // init output writers
+    outputWriterParaview_ = std::make_unique<OutputWriterParaview>(discretization_);
+    outputWriterText_ = std::make_unique<OutputWriterText>(discretization_);
+
+    // init pressure solvers
+    if (settings_.pressureSolver == "SOR") {
+        pressureSolver_ = std::make_unique<SOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega);
+    } else if (settings_.pressureSolver == "GaussSeidel") {
+        pressureSolver_ = std::make_unique<GaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
+    } else {
+        std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
+        std::exit(1);
+    }
 }
 
 

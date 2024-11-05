@@ -4,8 +4,8 @@
 #include "discretization/discretization.h"
 #include "discretization/centralDifferences.h"
 #include "pressureSolver/pressureSolver.h"
-#include "outputWriter/outputWriterParaview.h"
-#include "outputWriter/outputWriterText.h"
+#include "output_writer/output_writer_paraview.h"
+#include "output_writer/output_writer_text.h"
 #include "settings.h"
 #include <memory>
 #include <iostream>
