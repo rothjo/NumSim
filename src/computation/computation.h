@@ -54,6 +54,7 @@ protected:
      */
     void computeRightHandSide();
 
+
     /**
      * Solve the Poisson equation for the pressure
      */
