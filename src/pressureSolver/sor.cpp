@@ -12,7 +12,7 @@ void SOR::solve() {
     int iteration = 0;
 
     // applyBoundaryValues();
-    // computeResidualNorm();
+    computeResidualNorm();
 
     // TODO: change implementation to SOR
     while (residualNorm2_ > eps2 && iteration < maximumNumberOfIterations_) {
