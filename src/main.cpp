@@ -4,6 +4,7 @@
 #include "discretization/discretization.h"
 #include "discretization/centralDifferences.h"
 #include "pressureSolver/pressureSolver.h"
+#include "pressureSolver/gaussSeidel.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -17,14 +18,14 @@ int main(int argc, char *argv[])
     std::array<double, 2> origin = {-0.05, -0.05};
     std::array<double, 2> meshWidth = {0.1, 0.1};
     std::array<int, 2> nCells = {6, 6};
-    double epsilon = 0.1;
-    int iteration = 10;
+    double epsilon = 1e-5;
+    int iteration = 1e4;
     // std::cout << size[0] << std::endl;
     FieldVariable myArray(size, origin, meshWidth);
     std::shared_ptr<Discretization> disc = std::make_shared<CentralDifferences>(nCells, meshWidth);
-    //PressureSolver solver(disc, epsilon, iteration);
+    GaussSeidel solver(disc, epsilon, iteration);
 
-
+    // Test pressure boundaries
 
     for (int j = disc->pJEnd(); j >= 0; --j) {
         for (int i = 0; i < disc->pIEnd()+1; ++i) {
@@ -56,10 +57,36 @@ int main(int argc, char *argv[])
     for (int j = disc->pJEnd(); j >= 0; --j) {
         for (int i = 0; i < disc->pIEnd()+1; ++i) {
           std::cout << disc->p(i, j) << " ";
+          disc->rhs(i,j) = -0.001*disc->p(i,j);
         }
         std::cout << std::endl;
     }
 
+    for (int j = disc->pJEnd(); j >= 0; --j) {
+        for (int i = 0; i < disc->pIEnd()+1; ++i) {
+          std::cout << disc->p(i, j) << " ";
+          disc->p(i,j) = 0;
+        }
+        std::cout << std::endl;
+    }
+
+    for (int j = disc->pJEnd(); j >= 0; --j) {
+        for (int i = 0; i < disc->pIEnd()+1; ++i) {
+          std::cout << disc->rhs(i, j) << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    // TEST SOLVER
+
+    solver.solve();
+
+    for (int j = disc->pJEnd(); j >= 0; --j) {
+        for (int i = 0; i < disc->pIEnd()+1; ++i) {
+          std::cout << disc->p(i, j) << " ";
+        }
+        std::cout << std::endl;
+    }
 
     // double interpolate = myArray.interpolateAt(0.15, 0.15);
     // std::cout << interpolate << std::endl; 

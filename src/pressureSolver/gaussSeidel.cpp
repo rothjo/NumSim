@@ -1,4 +1,5 @@
 #include "gaussSeidel.h"
+#include <iostream>	
 
 
 GaussSeidel::GaussSeidel(std::shared_ptr<Discretization> discretization, double epsilon, int maximumNumberOfIterations) :
@@ -11,9 +12,8 @@ void GaussSeidel::solve() {
     const double eps2 = epsilon_ * epsilon_;
 
     int iteration = 0;
-
-    // applyBoundaryValues();
-    // computeResidualNorm();
+    // applyBoundaryValues(); already set at t = 0
+    computeResidualNorm();
 
     while (residualNorm2_ > eps2 && iteration < maximumNumberOfIterations_) {
         ++iteration;
