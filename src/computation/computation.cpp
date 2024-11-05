@@ -79,6 +79,22 @@ void Computation::applyBoundaryValues() {
 
 void Computation::computePreliminaryVelocities() {
     // Compute the preliminary velocities, F and G
+    for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
+        for (int j = discretization_->uJBegin(); j < discretization_->uJEnd(); j++) {
+            // Compute F
+            double f_diffusion_term = (discretization_->computeD2uDx2(i,j) + discretization_->computeD2uDy2(i,j))/settings_.re;
+            double f_convection_term = (discretization_->computeDu2Dx(i,j) + discretization_->computeDuvDy(i,j));
+            double discretization_->f(i,j) = discretization_->u(i,j) + dt*(f_diffusion_term - f_convection_term);
+        }
+    }
+    for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
+        for (int j = discretization_->vJBegin(); j < discretization_->vJEnd(); j++) {
+            // Compute G
+            double g_diffusion_term = (discretization_->computeD2vDx2(i,j) + discretization_->computeD2vDy2(i,j))/settings_.re;
+            double g_convection_term = (discretization_->computeDuvDx(i,j) + discretization_->computeDv2Dy(i,j));
+            double discretization_->g(i,j) = discretization_->v(i,j) + dt*(g_diffusion_term - g_convection_term);
+        }
+    }     
 }
 
 void Computation::computeRightHandSide() {
