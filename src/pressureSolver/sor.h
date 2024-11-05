@@ -16,6 +16,5 @@ public:
 
 private:
     double omega_;
-    void computeResidualNorm() override;
 };
   
