@@ -60,7 +60,6 @@ void PressureSolver::computeResidualNorm() {
     residualNorm2_ = residualNorm2 / N;
 }
 
-
 double PressureSolver::residualNorm() {
     return residualNorm2_;
 }

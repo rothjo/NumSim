@@ -15,8 +15,5 @@ public:
      * Solve poisson problem for the pressure, using the rhs and p field variables in staggeredGrid
      */
     void solve() override;
-
-private:
-    void computeResidualNorm() override;
 };
   
