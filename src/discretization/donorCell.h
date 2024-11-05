@@ -3,13 +3,13 @@
 #include "discretization.h"
 
 /**
- * Calculate derivatives needed for central differences
+ * Calculate derivatives needed for donor cell
  */
 
-class CentralDifferences : public Discretization {
+class DonorCell : public Discretization {
 public:
-    CentralDifferences(std::array<int, 2> nCells, std::array<double,2> meshWidth);
-    
+    DonorCell(std::array<int, 2> nCells, std::array<double,2> meshWidth, double alpha);
+
     /**
      * Compute the derivative of u^2 in x-direction
      * 
@@ -45,4 +45,7 @@ public:
      * @return derivative of u*v in y-direction
      */
     virtual double computeDuvDy (int i, int j) const;
+
+private:
+    double alpha_;
 };
