@@ -4,8 +4,8 @@
 #include "discretization/discretization.h"
 #include "discretization/centralDifferences.h"
 #include "pressureSolver/pressureSolver.h"
-#include "outputWriter/outputWriterParaview.h"
-#include "outputWriter/outputWriterText.h"
+#include "output_writer/output_writer_paraview.h"
+#include "output_writer/output_writer_text.h"
 #include "settings.h"
 #include <memory>
 #include <iostream>
@@ -53,6 +53,7 @@ protected:
      * Compute the right hand side of the Poisson equation for the pressure
      */
     void computeRightHandSide();
+
 
     /**
      * Solve the Poisson equation for the pressure
