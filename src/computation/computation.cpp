@@ -7,7 +7,8 @@
 void Computation::initialize(int argc, char* argv[]) {
     // load settigns from file
     // settings_ = Settings();
-    settings_.loadFromFile("parameters.txt");
+    std::string filename = argv[1];
+    settings_.loadFromFile(filename);
 
     // init meshWidth
     meshWidth_ = {settings_.physicalSize[0] / settings_.nCells[0], settings_.physicalSize[1] / settings_.nCells[1]};
