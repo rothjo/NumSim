@@ -74,7 +74,7 @@ void Computation::computeTimeStepWidth() {
     // Compute CFL condition from convection operator, use |u_max|  = 1, |v_max| = 1
     double dt_convection = 0.5 * std::min(discretization_->dx(), discretization_->dy());
 
-    double dt = std::min(dt_diffusion, dt_convection / 3.0);
+    double dt = std::min(dt_diffusion, dt_convection);
     if ( dt > settings_.maximumDt) {
         std::cout << "Warning: Time step width is larger than maximum time step width. Using maximum time step width instead." << std::endl;
         dt_ = settings_.maximumDt;
