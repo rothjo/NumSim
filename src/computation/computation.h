@@ -44,7 +44,7 @@ protected:
     void computeTimeStepWidth();
 
     /**
-     * Set boundary values of u and v to correct values
+     * Set boundary values of u and v and F and G to correct values
      */
     void applyBoundaryValues();
 
