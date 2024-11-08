@@ -39,8 +39,8 @@ void PressureSolver::setBoundaryValues() {
 void PressureSolver::computeResidualNorm() {
     // Define needed parameters
     double residualNorm2 = 0.0;
-    const double dx_2 = pow(discretization_->dx(), 2);
-    const double dy_2= pow(discretization_->dy(), 2);
+    const double dx_2 = discretization_->dx() * discretization_->dx();
+    const double dy_2 = discretization_->dy() * discretization_->dy();
     const int N = 
             (discretization_->pIBegin() - discretization_->pIEnd()) * (discretization_->pJBegin() - discretization_->pJEnd()); // Number of points used to compute norm
 
@@ -53,7 +53,7 @@ void PressureSolver::computeResidualNorm() {
                     (discretization_->p(i + 1, j) - 2 * discretization_->p(i, j) + discretization_->p(i - 1, j)) / dx_2;
             double p_yy = 
                     (discretization_->p(i, j + 1) - 2 * discretization_->p(i, j) + discretization_->p(i, j - 1)) / dy_2;
-            residualNorm2 += pow(discretization_->rhs(i, j) - p_xx - p_yy, 2);
+            residualNorm2 += (discretization_->rhs(i, j) - p_xx - p_yy) * (discretization_->rhs(i, j) - p_xx - p_yy);
         }
     }
 
