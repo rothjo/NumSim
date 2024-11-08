@@ -1,5 +1,7 @@
 #include "FieldVariable.h"
 #include <cassert>
+#include <cmath>
+#include <iostream>
 
 FieldVariable::FieldVariable(std::array<int,2> size, std::array<double,2> origin, std::array<double,2> meshWidth) :
     Array2D(size), origin_(origin), meshWidth_(meshWidth) {}
@@ -50,6 +52,18 @@ double FieldVariable::interpolateAt(double x, double y) const {
 
 }
 
+double FieldVariable::computeMaxAbs() const {
+    double max_value = 0.0;
+
+    // Go through inner points
+    for (int i = 1; i < (size_[0] - 1); i++) {
+        for (int j = 1; j < (size_[1] - 1); j++) {
+            max_value = std::max(max_value, std::fabs((*this)(i,j)));
+        }     
+    }
+
+    return max_value;
+}
     
 
 

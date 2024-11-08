@@ -17,6 +17,11 @@ public:
      */
     double interpolateAt(double x, double y) const;
 
+    /**
+     * Compute maximum inner value of a field variable
+     */
+    double computeMaxAbs() const;
+
 private:
     const std::array<double,2> origin_; //< origin of computational domain
     const std::array<double,2> meshWidth_; //< meshWidth in x and y direction
