@@ -1,4 +1,5 @@
 #include "computation.h"
+#include <cmath>
 
 /**
  * Initialize the computation object, parse the settings from the file that is given as the only command line argument
@@ -43,11 +44,12 @@ void Computation::runSimulation() {
 
     // Loop over all time steps until t_end is reached
     
-    computeTimeStepWidth();
-
+    computeMaxDBC();
     for (int time = 0; time * dt_ < settings_.endTime; ++time) {
 
         applyBoundaryValues();
+
+        computeTimeStepWidth();
 
         computePreliminaryVelocities();
 
@@ -72,19 +74,39 @@ void Computation::computeTimeStepWidth() {
 
     // Compute CFL condition from diffusion operator
     double dt_diffusion = (settings_.re / 2.0) * (dx2 * dy2)/(dx2 + dy2);
-    // Compute CFL condition from convection operator, use |u_max|  = 1, |v_max| = 1
-    double dt_convection = 0.5 * std::min(discretization_->dx(), discretization_->dy());
 
-    double dt = std::min(dt_diffusion, dt_convection);
+    // Compute CFL condition from convection operator
+    // Compute u_max and v_max
+    double u_max = std::max(discretization_->u().computeMaxAbs(), maxDBC_[0]);
+    double v_max = std::max(discretization_->v().computeMaxAbs(), maxDBC_[1]);
+
+    // Compute dt_convection
+    double dt_convection_x = discretization_->dx() / u_max;
+    double dt_convection_y = discretization_->dy() / v_max;
+    double dt_convection = std::min(dt_convection_x, dt_convection_y);
+
+    double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
     if ( dt > settings_.maximumDt) {
         std::cout << "Warning: Time step width is larger than maximum time step width. Using maximum time step width instead." << std::endl;
         dt_ = settings_.maximumDt;
     } else {
         dt_ = dt;
     }
-} 
-
+}
     
+void Computation::computeMaxDBC() {
+    // Compute max DBC values
+    const double max_u_TB = std::max(std::fabs(settings_.dirichletBcBottom[0]), std::fabs(settings_.dirichletBcTop[0]));
+    const double max_v_TB = std::max(std::fabs(settings_.dirichletBcBottom[1]), std::fabs(settings_.dirichletBcTop[1]));
+
+    const double max_u_LR = std::max(std::fabs(settings_.dirichletBcLeft[0]), std::fabs(settings_.dirichletBcRight[0]));
+    const double max_v_LR = std::max(std::fabs(settings_.dirichletBcLeft[1]), std::fabs(settings_.dirichletBcRight[1]));
+
+    const double max_u = std::max(max_u_TB, max_u_LR);
+    const double max_v = std::max(max_v_TB, max_v_LR);
+
+    maxDBC_ = {max_u, max_v};
+}
 
 void Computation::applyBoundaryValues() {
     // Set boundary values of u, v and for F and G to correct values

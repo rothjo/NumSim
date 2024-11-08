@@ -44,6 +44,11 @@ protected:
     void computeTimeStepWidth();
 
     /**
+     * Compute max DBC values
+     */
+    void computeMaxDBC();
+
+    /**
      * Set boundary values of u and v and F and G to correct values
      */
     void applyBoundaryValues();
@@ -80,6 +85,6 @@ protected:
     std::unique_ptr<OutputWriterText> outputWriterText_;
     std::array<double, 2> meshWidth_;
     double dt_;
-
+    std::array<double, 2> maxDBC_;
 
 };
