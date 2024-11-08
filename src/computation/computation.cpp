@@ -41,15 +41,22 @@ void Computation::initialize(int argc, char* argv[]) {
  * run the whole simulation until t_end
  */
 void Computation::runSimulation() {
+    double time = 0.0;
+    int t_iter = 0;
+    double time_epsilon = 1e-10;
 
     // Loop over all time steps until t_end is reached
-    
     computeMaxDBC();
-    for (int time = 0; time * dt_ < settings_.endTime; ++time) {
+    while (time < (settings_.endTime - time_epsilon)) {
 
         applyBoundaryValues();
 
         computeTimeStepWidth();
+        // Check to choose the last time step differently to hit t_end
+        if (time + dt_ > settings_.endTime - time_epsilon) {
+            dt_ = settings_.endTime - time;
+        }
+        time += dt_;
 
         computePreliminaryVelocities();
 

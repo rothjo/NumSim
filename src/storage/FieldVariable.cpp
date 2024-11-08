@@ -55,9 +55,9 @@ double FieldVariable::interpolateAt(double x, double y) const {
 double FieldVariable::computeMaxAbs() const {
     double max_value = 0.0;
 
-    // Go through inner points
-    for (int i = 1; i < (size_[0] - 1); i++) {
-        for (int j = 1; j < (size_[1] - 1); j++) {
+    // Go through all points
+    for (int i = 0; i < size_[0]; i++) {
+        for (int j = 0; j < size_[1]; j++) {
             max_value = std::max(max_value, std::fabs((*this)(i,j)));
         }     
     }

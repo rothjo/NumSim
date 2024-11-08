@@ -18,7 +18,7 @@ public:
     double interpolateAt(double x, double y) const;
 
     /**
-     * Compute maximum inner value of a field variable
+     * Compute maximum absolute value
      */
     double computeMaxAbs() const;
 
