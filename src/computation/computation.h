@@ -1,6 +1,5 @@
 #pragma once
 
-// Include necessary .h and bibliotecas
 #include "discretization/discretization.h"
 #include "discretization/centralDifferences.h"
 #include "discretization/donorCell.h"
@@ -20,7 +19,6 @@
  * This class handles the main simulation. 
  * It implements the time stepping scheme, computes all the terms and calls the pressure solver.
  */
-
 class Computation {
 public:
 
@@ -39,17 +37,17 @@ public:
 protected:
 
     /**
-     * Compute the time step width dt from maximum velocities
+     * Compute the time step width dt from the CFL-condition
      */
     void computeTimeStepWidth();
 
     /**
-     * Set boundary values of u and v and F and G to correct values
+     * Set boundary values of u and v
      */
     void applyBoundaryValues();
 
     /**
-     * Compute the preliminary velocities, F and G
+     * Compute the preliminary velocities F and G and set boundary values
      */
     void computePreliminaryVelocities();
 
@@ -66,13 +64,11 @@ protected:
 
 
     /**
-     * Compute the new velocities, u,v from the preliminary velocities, F,G and the pressure, p
+     * Compute the new velocities u,v from the preliminary velocities F,G and the pressure p
      */
     void computeVelocities();
 
-    /**
-     * set attributes
-     */
+    // set attributes
     Settings settings_;
     std::shared_ptr<Discretization> discretization_;
     std::unique_ptr<PressureSolver> pressureSolver_;

@@ -5,7 +5,6 @@
 /**
  * Calculate derivatives needed for donor cell
  */
-
 class DonorCell : public Discretization {
 public:
     DonorCell(std::array<int, 2> nCells, std::array<double,2> meshWidth, double alpha);
