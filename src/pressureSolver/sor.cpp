@@ -1,4 +1,5 @@
 #include "sor.h"
+#include <iostream>
 
 SOR::SOR(std::shared_ptr<Discretization> discretization, double epsilon, int maximumNumberOfIterations, double omega) :
     PressureSolver(discretization, epsilon, maximumNumberOfIterations), omega_(omega) {}
@@ -8,6 +9,7 @@ void SOR::solve() {
     const double dy2 = discretization_->dy() * discretization_->dy();
     const double k = (dx2 * dy2) / (2.0 * (dx2 + dy2));
     const double eps2 = epsilon_ * epsilon_;
+    const int Num = (discretization_->pIEnd() - discretization_->pIBegin()) * (discretization_->pJEnd() - discretization_->pJBegin());
 
     int iteration = 0;
 
@@ -29,9 +31,11 @@ void SOR::solve() {
         }
         setBoundaryValues();
         computeResidualNorm();
-
-        
+        // std::cout << residualNorm2_ << std::endl;
     }
-    this->numberOfIterations_ = iteration;
+    this->numberOfIterations_ += iteration;
+    
+    // std::cout << "number of iteration: " << iteration << std::endl;
+    // std::cout << '\n' << std::endl;
 }
     

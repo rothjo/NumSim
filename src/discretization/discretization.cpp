@@ -10,7 +10,7 @@ Discretization::Discretization(std::array<int, 2> nCells, std::array<double,2> m
  * @return approximated derivative of u^2 in x-direction
  */
 double Discretization::computeD2uDx2(int i, int j) const {
-    return (u(i+1,j) - 2*u(i,j) + u(i-1,j)) / (dx() * dx());
+    return (u(i+1,j) - 2.0*u(i,j) + u(i-1,j)) / (dx() * dx());
 }
 
 /**
@@ -20,7 +20,7 @@ double Discretization::computeD2uDx2(int i, int j) const {
  * @return approximated derivative of u^2 in y-direction
  */
 double Discretization::computeD2uDy2(int i, int j) const {
-    return (u(i,j+1) - 2*u(i,j) + u(i,j-1)) / (dy() * dy());
+    return (u(i,j+1) - 2.0*u(i,j) + u(i,j-1)) / (dy() * dy());
 }
 
 /**
@@ -30,7 +30,7 @@ double Discretization::computeD2uDy2(int i, int j) const {
  * @return approximated derivative of v^2 in x-direction
  */
 double Discretization::computeD2vDx2(int i, int j) const {
-    return (v(i+1,j) - 2*v(i,j) + v(i-1,j)) / (dx() * dx());
+    return (v(i+1,j) - 2.0*v(i,j) + v(i-1,j)) / (dx() * dx());
 }
 
 /**
@@ -40,7 +40,7 @@ double Discretization::computeD2vDx2(int i, int j) const {
  * @return approximated derivative of v^2 in y-direction
  */
 double Discretization::computeD2vDy2(int i, int j) const {
-    return (v(i,j+1) - 2*v(i,j) + v(i,j-1)) / (dy() * dy());
+    return (v(i,j+1) - 2.0*v(i,j) + v(i,j-1)) / (dy() * dy());
 }
 
 /**

@@ -58,6 +58,7 @@ double FieldVariable::computeMaxAbs() const {
     // Go through all points
     for (int i = 0; i < size_[0]; i++) {
         for (int j = 0; j < size_[1]; j++) {
+            double abs_val = fabs((*this)(i,j));
             if (fabs((*this)(i, j)) > max_value) {
                 max_value = fabs((*this)(i,j));
             }

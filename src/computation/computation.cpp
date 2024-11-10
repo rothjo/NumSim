@@ -49,7 +49,7 @@ void Computation::runSimulation() {
     while (time < (settings_.endTime - time_epsilon)) {
 
         applyBoundaryValues();
-
+        
         computeTimeStepWidth();
         // Check to choose the last time step differently to hit t_end
         if (time + dt_ > settings_.endTime - time_epsilon) {
@@ -57,7 +57,6 @@ void Computation::runSimulation() {
         }
         time += dt_;
 
-         // std::cout << "Time: " << dt_ << std::endl;
         computePreliminaryVelocities();
 
         computeRightHandSide();
@@ -67,7 +66,7 @@ void Computation::runSimulation() {
         computeVelocities();
 
         outputWriterParaview_->writeFile(time); // Output
-        // outputWriterText_->writeFile(time); // Output
+        outputWriterText_->writeFile(time); // Output
     }
 
 
@@ -76,21 +75,21 @@ void Computation::runSimulation() {
 void Computation::computeTimeStepWidth() {
     // Compute the time step width dt from maximum velocities
     // Idea: CFL-condition satisfied with factor 0.5
-    double dx2 = discretization_->dx() * discretization_->dx();
-    double dy2 = discretization_->dy() * discretization_->dy();
+    const double dx2 = discretization_->dx() * discretization_->dx();
+    const double dy2 = discretization_->dy() * discretization_->dy();
 
     // Compute CFL condition from diffusion operator
-    double dt_diffusion = (settings_.re / 2.0) * (dx2 * dy2)/(dx2 + dy2);
+    const double dt_diffusion = (settings_.re / 2.0) * (dx2 * dy2)/(dx2 + dy2);
 
     // Compute CFL condition from convection operator
     // Compute u_max and v_max
 
     // Compute dt_convection
-    double dt_convection_x = discretization_->dx() / discretization_->u().computeMaxAbs();
-    double dt_convection_y = discretization_->dy() / discretization_->v().computeMaxAbs();
-    double dt_convection = std::min(dt_convection_x, dt_convection_y);
+    const double dt_convection_x = discretization_->dx() / discretization_->u().computeMaxAbs();
+    const double dt_convection_y = discretization_->dy() / discretization_->v().computeMaxAbs();
+    const double dt_convection = std::min(dt_convection_x, dt_convection_y);
 
-    double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
+    const double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
     if ( dt > settings_.maximumDt) {
         std::cout << "Warning: Time step width is larger than maximum time step width. Using maximum time step width instead." << std::endl;
         dt_ = settings_.maximumDt;
@@ -109,44 +108,48 @@ void Computation::applyBoundaryValues() {
     // velocity u
     for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
         discretization_->u(i, discretization_->uJEnd()) = 2 * settings_.dirichletBcTop[0] - discretization_->u(i, discretization_->uJEnd() - 1);
+        // discretization_->f(i, discretization_->uJEnd()) = discretization_->u(i, discretization_->uJEnd());
     }
     // velocity v
     for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
         discretization_->v(i, discretization_->vJEnd()) = settings_.dirichletBcTop[1];
-        discretization_->g(i, discretization_->vJEnd()) = discretization_->v(i, discretization_->vJEnd());
+        // discretization_->g(i, discretization_->vJEnd()) = discretization_->v(i, discretization_->vJEnd());
     }
 
     // Set bottom boundary
     // velocity u
     for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
         discretization_->u(i, discretization_->uJBegin() - 1) = 2 * settings_.dirichletBcBottom[0] - discretization_->u(i, discretization_->uJBegin());
+        // discretization_->f(i, discretization_->uJBegin() - 1) = discretization_->u(i, discretization_->uJBegin() - 1);
     }
     // velocity v and preliminary velocity G
     for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
         discretization_->v(i, discretization_->vJBegin() - 1) = settings_.dirichletBcBottom[1];
-        discretization_->g(i, discretization_->vJBegin() - 1) = discretization_->v(i, discretization_->vJBegin() - 1);
+        // discretization_->g(i, discretization_->vJBegin() - 1) = discretization_->v(i, discretization_->vJBegin() - 1);
     }
 
     // Set left boundary
     // velocity u and preliminary velocity F
     for (int j = (discretization_->uJBegin() - 1); j < (discretization_->uJEnd() + 1); j++) {
         discretization_->u(discretization_->uIBegin() - 1, j) = settings_.dirichletBcLeft[0];
-        discretization_->f(discretization_->uIBegin() - 1, j) = discretization_->u(discretization_->uIBegin() - 1, j);
+        // discretization_->f(discretization_->uIBegin() - 1, j) = discretization_->u(discretization_->uIBegin() - 1, j);
     }
     // velocity v
     for (int j = (discretization_->vJBegin() - 1); j < (discretization_->vJEnd() + 1); j++) {
         discretization_->v(discretization_->vIBegin() - 1, j) = 2 * settings_.dirichletBcLeft[1] -  discretization_->v(discretization_->vIBegin(), j);
+        // discretization_->g(discretization_->vIBegin() - 1, j) = discretization_->v(discretization_->vIBegin() - 1, j);
     }
 
     // Set right boundary
     // velocity u and preliminary velocity F
     for (int j = (discretization_->uJBegin() - 1); j < (discretization_->uJEnd() + 1); j++) {
         discretization_->u(discretization_->uIEnd(), j) = settings_.dirichletBcRight[0];
-        discretization_->f(discretization_->uIEnd(), j) = discretization_->u(discretization_->uIEnd(), j);
+        // discretization_->f(discretization_->uIEnd(), j) = discretization_->u(discretization_->uIEnd(), j);
     }
     // velocity v
     for (int j = (discretization_->vJBegin() - 1); j < (discretization_->vJEnd() + 1); j++) {
         discretization_->v(discretization_->vIEnd(), j) = 2 * settings_.dirichletBcRight[1] -  discretization_->v(discretization_->vIEnd() - 1, j);
+        // discretization_->g(discretization_->vIEnd(), j) = discretization_->v(discretization_->vIEnd(), j);
     }
 }
 
@@ -167,7 +170,48 @@ void Computation::computePreliminaryVelocities() {
             double g_convection_term = (discretization_->computeDuvDx(i,j) + discretization_->computeDv2Dy(i,j));
             discretization_->g(i,j) = discretization_->v(i,j) + dt_*(g_diffusion_term - g_convection_term + settings_.g[1]);
         }
-    }     
+    }    
+
+
+
+    // test: apply prelim BC
+    for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
+        discretization_->f(i, discretization_->uJEnd()) = discretization_->u(i, discretization_->uJEnd());
+    }
+    // velocity v
+    for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
+        discretization_->g(i, discretization_->vJEnd()) = discretization_->v(i, discretization_->vJEnd());
+    }
+
+    // Set bottom boundary
+    // velocity u
+    for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
+        discretization_->f(i, discretization_->uJBegin() - 1) = discretization_->u(i, discretization_->uJBegin() - 1);
+    }
+    // velocity v and preliminary velocity G
+    for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
+        discretization_->g(i, discretization_->vJBegin() - 1) = discretization_->v(i, discretization_->vJBegin() - 1);
+    }
+
+    // Set left boundary
+    // velocity u and preliminary velocity F
+    for (int j = (discretization_->uJBegin() - 1); j < (discretization_->uJEnd() + 1); j++) {
+        discretization_->f(discretization_->uIBegin() - 1, j) = discretization_->u(discretization_->uIBegin() - 1, j);
+    }
+    // velocity v
+    for (int j = (discretization_->vJBegin() - 1); j < (discretization_->vJEnd() + 1); j++) {
+        discretization_->g(discretization_->vIBegin() - 1, j) = discretization_->v(discretization_->vIBegin() - 1, j);
+    }
+
+    // Set right boundary
+    // velocity u and preliminary velocity F
+    for (int j = (discretization_->uJBegin() - 1); j < (discretization_->uJEnd() + 1); j++) {
+        discretization_->f(discretization_->uIEnd(), j) = discretization_->u(discretization_->uIEnd(), j);
+    }
+    // velocity v
+    for (int j = (discretization_->vJBegin() - 1); j < (discretization_->vJEnd() + 1); j++) {
+        discretization_->g(discretization_->vIEnd(), j) = discretization_->v(discretization_->vIEnd(), j);
+    } 
 }
 
 void Computation::computeRightHandSide() {
@@ -175,10 +219,10 @@ void Computation::computeRightHandSide() {
     for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
         for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
 
-            double F_x = (discretization_->f(i, j) - discretization_->f(i - 1, j)) / discretization_->dx();
-            double G_y = (discretization_->g(i, j) - discretization_->g(i, j - 1)) / discretization_->dy();
+            const double F_x = ((discretization_->f(i, j) - discretization_->f(i - 1, j)) / discretization_->dx());
+            const double G_y = ((discretization_->g(i, j) - discretization_->g(i, j - 1)) / discretization_->dy());
 
-            discretization_->rhs(i, j) = (F_x + G_y) / dt_;
+            discretization_->rhs(i, j) = ((F_x + G_y) / dt_);
         }
     }
 }

@@ -1,7 +1,9 @@
 #include "centralDifferences.h"
+#include <iostream>
+#include <cmath>
 
 CentralDifferences::CentralDifferences(std::array<int, 2> nCells, std::array<double,2> meshWidth) : 
-    Discretization(nCells, meshWidth) {};
+    Discretization(nCells, meshWidth) {}
 
 double CentralDifferences::computeDu2Dx(int i, int j) const {
     const double u_left = (u(i,j) + u(i-1,j)) / 2.0;
