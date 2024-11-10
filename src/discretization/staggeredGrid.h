@@ -7,7 +7,7 @@
 class StaggeredGrid
 {
 public:
-    //! cosntructor
+    //! constructor
     StaggeredGrid(std::array<int,2> nCells, std::array<double,2> meshWidth);
 
     //! get the mesh width in x and y direction

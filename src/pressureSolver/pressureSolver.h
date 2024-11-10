@@ -9,7 +9,7 @@
  */
 class PressureSolver {
 public:
-    PressureSolver(std::shared_ptr<Discretization>, double epsilon, int maximumNumberOfIterations);
+    PressureSolver(std::shared_ptr<Discretization> discretization, double epsilon, int maximumNumberOfIterations);
 
     /**
      * Solve poisson problem for the pressure, using the rhs and p field variables in staggeredGrid

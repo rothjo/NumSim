@@ -11,18 +11,6 @@ StaggeredGrid::StaggeredGrid(std::array<int, 2> nCells, std::array<double, 2> me
       g_(FieldVariable({nCells[0] + 2, nCells[1] + 2}, {-0.5 * meshWidth[0], 0.0}, meshWidth)) {
 }
 
-// StaggeredGrid::StaggeredGrid(std::array<int,2> nCells, std::array<double,2> meshWidth) :
-//     nCells_(nCells), meshWidth_(meshWidth) {
-//         std::array<int, 2> size = {nCells[0] + 2, nCells[1] + 2};
-
-//         u_ = FieldVariable(size, {0.0, -0.5 * meshWidth[1]}, meshWidth);
-//         v_ = FieldVariable(size, {-0.5 * meshWidth[0], 0.0}, meshWidth);
-//         p_ = FieldVariable(size, {-0.5 * meshWidth[0], -0.5 * meshWidth[1]}, meshWidth);
-//         rhs_ = FieldVariable(size, {-0.5 * meshWidth[0], -0.5 * meshWidth[1]}, meshWidth);
-//         f_ = FieldVariable(size, {0.0, -0.5 * meshWidth[1]}, meshWidth);
-//         g_ = FieldVariable(size, {-0.5 * meshWidth[0], 0.0}, meshWidth);
-//     }
-
 const std::array<double,2> StaggeredGrid::meshWidth() const {
     return meshWidth_;
 }

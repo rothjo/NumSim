@@ -13,7 +13,10 @@ public:
     FieldVariable(std::array<int,2> size, std::array<double,2> origin, std::array<double,2> meshWidth);
 
     /**
-     * Interpolate FieldVariable at given position x and y
+     * Get the bilinear interpolated value of the discrete field variable
+     * @param x x-coordinate of the point
+     * @param y y-coordinate of the point
+     * @return interpolated value of the discrete field variable at position (x,y)
      */
     double interpolateAt(double x, double y) const;
 
