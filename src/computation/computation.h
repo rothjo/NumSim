@@ -47,6 +47,16 @@ protected:
     void applyBoundaryValues();
 
     /**
+     * set initial boundary values, which do not change during the simulation
+     */
+    void applyInitalBoundaryValues();
+
+    /**
+     * set boundary values of preliminary velocities f and g
+     */
+    void applyPreliminaryBoundaryValues();
+
+    /**
      * Compute the preliminary velocities F and G and set boundary values
      */
     void computePreliminaryVelocities();
@@ -76,5 +86,4 @@ protected:
     std::unique_ptr<OutputWriterText> outputWriterText_;
     std::array<double, 2> meshWidth_;
     double dt_;
-
 };

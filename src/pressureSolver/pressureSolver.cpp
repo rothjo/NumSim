@@ -10,22 +10,19 @@ PressureSolver::PressureSolver(std::shared_ptr<Discretization> discretization, d
     maximumNumberOfIterations_(maximumNumberOfIterations) {}
     
 void PressureSolver::setBoundaryValues() {
-    // Set pressure boundary values for the left and right side of the grid
-    for (int j = discretization_->pJBegin() - 1; j < discretization_->pJEnd() + 1; j++) {
-        discretization_->p(discretization_->pIBegin() - 1, j) = discretization_->p(discretization_->pIBegin(), j);
-        discretization_->p(discretization_->pIEnd(), j) = discretization_->p(discretization_->pIEnd() - 1, j);
-    }
-
     // Set pressure boundary values for the upper and lower side of the grid
     for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
         discretization_->p(i, discretization_->pJBegin() - 1) = discretization_->p(i, discretization_->pJBegin());
         discretization_->p(i, discretization_->pJEnd()) = discretization_->p(i, discretization_->pJEnd() - 1);
     }
+
+    // Set pressure boundary values for the left and right side of the grid
+    for (int j = discretization_->pJBegin() - 1; j < discretization_->pJEnd() + 1; j++) {
+        discretization_->p(discretization_->pIBegin() - 1, j) = discretization_->p(discretization_->pIBegin(), j);
+        discretization_->p(discretization_->pIEnd(), j) = discretization_->p(discretization_->pIEnd() - 1, j);
+    }
 }
 
-/**
- * Compute euclidean residual norm
- */
 void PressureSolver::computeResidualNorm() {
     // Define needed parameters
     double residualNorm2 = 0.0;

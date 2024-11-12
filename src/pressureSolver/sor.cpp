@@ -18,10 +18,10 @@ void SOR::solve() {
         ++iteration;
         for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
             for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
-                double px = (discretization_->p(i + 1, j) + discretization_->p(i - 1, j)) / dx2;
-                double py = (discretization_->p(i, j + 1) + discretization_->p(i, j - 1)) / dy2;
+                const double px = (discretization_->p(i + 1, j) + discretization_->p(i - 1, j)) / dx2;
+                const double py = (discretization_->p(i, j + 1) + discretization_->p(i, j - 1)) / dy2;
 
-                double correction = k * (px + py - discretization_->rhs(i, j)) - discretization_->p(i, j);
+                const double correction = k * (px + py - discretization_->rhs(i, j)) - discretization_->p(i, j);
                 discretization_->p(i,j) += omega_ * correction;
             }
         }
