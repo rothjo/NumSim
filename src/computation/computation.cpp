@@ -53,7 +53,7 @@ void Computation::runSimulation() {
 
         computePreliminaryVelocities();
 
-        applyPreliminaryBoundaryValues();
+        // applyPreliminaryBoundaryValues();
 
         computeRightHandSide();
 
