@@ -10,6 +10,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <memory>
+#include <chrono>
 
 
 int main(int argc, char *argv[])
@@ -38,7 +39,16 @@ int main(int argc, char *argv[])
 
   Computation comp;
   comp.initialize(argc, argv);
+
+  auto start = std::chrono::high_resolution_clock::now();
+
   comp.runSimulation();
+
+  auto stop = std::chrono::high_resolution_clock::now();
+
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+
+  std::cout << "Time needed: " << duration.count() << " microseconds" << std::endl;
 
   return EXIT_SUCCESS;
 }

@@ -61,7 +61,7 @@ void Computation::runSimulation() {
 
         computeVelocities();
 
-        outputWriterParaview_->writeFile(time); // Output
+        // outputWriterParaview_->writeFile(time); // Output
         // outputWriterText_->writeFile(time); // Output
     }
 }
