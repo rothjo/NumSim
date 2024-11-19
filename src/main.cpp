@@ -12,7 +12,6 @@
 #include <memory>
 #include <chrono>
 
-
 int main(int argc, char *argv[])
 {
 
@@ -40,15 +39,30 @@ int main(int argc, char *argv[])
   Computation comp;
   comp.initialize(argc, argv);
 
+  // first measures
   auto start = std::chrono::high_resolution_clock::now();
 
   comp.runSimulation();
 
   auto stop = std::chrono::high_resolution_clock::now();
 
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-  std::cout << "Time needed: " << duration.count() << " microseconds" << std::endl;
+  // int n = 5;
+
+  // for(int i = 0; i<n-1; i++) {
+  //   start = std::chrono::high_resolution_clock::now();
+
+  //   comp.runSimulation();
+
+  //   stop = std::chrono::high_resolution_clock::now();
+
+  //   duration += std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  // }
+
+  std::cout << "Time needed: " << duration.count() << " ms" << std::endl;
+
+
 
   return EXIT_SUCCESS;
 }
