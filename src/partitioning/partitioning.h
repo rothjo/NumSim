@@ -53,4 +53,9 @@ public:
   //! (i_local,j_local) + nodeOffset = (i_global,j_global)
   //! used in OutputWriterParaviewParallel
   std::array<int,2> nodeOffset() const;
+
+  // sendToTop, Bottom, Left, Right
+private:
+  // globalCells, localCells
+
 };
