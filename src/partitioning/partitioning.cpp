@@ -15,11 +15,11 @@ void Partitioning::initialize(std::array<int,2> nCellsGlobal) {
 
     MPI_Dims_create(nRanks_, 2, nSubdomains_.data());
 
-    nCellsLocal_[0] = static_cast<int>(nCellsGlobal[0] / nSubdomains_[0]);
-    nCellsLocal_[1] = static_cast<int>(nCellsGlobal[1] / nSubdomains_[1]);
+    nCellsLocal_[0] = nCellsGlobal[0] / nSubdomains_[0];
+    nCellsLocal_[1] = nCellsGlobal[1] / nSubdomains_[1];
 
     const int currentColumn = ownRankNo_ % nSubdomains_[0];
-    const int currentRow = static_cast<int>(ownRankNo_ / nSubdomains_[0]);
+    const int currentRow = ownRankNo_ / nSubdomains_[0];
     
     nodeOffset_[0] = currentColumn * nCellsLocal_[0];
     nodeOffset_[1] = currentRow * nCellsLocal_[1];
@@ -84,22 +84,26 @@ bool Partitioning::ownPartitionContainsRightBoundary() const {
 }
 
 int Partitioning::leftNeighbourRankNo() const {
-    assert(ownRankNo_ % nSubdomains_[0] != 0);
+    // assert(ownRankNo_ % nSubdomains_[0] != 0);
+    assert(!ownPartitionContainsLeftBoundary());
     return ownRankNo_ - 1;
 }
 
 int Partitioning::rightNeighbourRankNo() const {
-    assert(ownRankNo_ % nSubdomains_[0] != nSubdomains_[0] - 1);
+    // assert(ownRankNo_ % nSubdomains_[0] != nSubdomains_[0] - 1);
+    assert(!ownPartitionContainsRightBoundary());
     return ownRankNo_ + 1;
 }
 
 int Partitioning::topNeighbourRankNo() const {
-    assert(ownRankNo_ < nRanks_ - nSubdomains_[0]);
+    // assert(ownRankNo_ < nRanks_ - nSubdomains_[0]);
+    assert(!ownPartitionContainsTopBoundary());
     return ownRankNo_ + nSubdomains_[0];
 }
 
 int Partitioning::bottomNeighbourRankNo() const {
-    assert(ownRankNo_ >= nSubdomains_[0]);
+    // assert(ownRankNo_ >= nSubdomains_[0]);
+    assert(!ownPartitionContainsBottomBoundary());
     return ownRankNo_ - nSubdomains_[0];
 }
 
