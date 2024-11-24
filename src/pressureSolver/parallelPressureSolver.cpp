@@ -1,3 +1,4 @@
+#include "pressureSolver/parallelPressureSolver.h"
 #include "pressureSolver/pressureSolver.h"
 #include <cmath>
 #include "discretization/discretization.h"
@@ -22,8 +23,8 @@ void ParallelPressureSolver::communicateAndBoundaries() {
     std::vector<double> receiveLeftBuffer(discretization_->pJEnd() - discretization_->pJBegin(), 0);
     std::vector<double> receiveRightBuffer(discretization_->pJEnd() - discretization_->pJBegin(), 0);
 
-    MPI_request requestSendTop, requestSendBottom, requestSendLeft, requestSendRight;
-    MPI_request requestReceiveTop, requestReceiveBottom, requestReceiveLeft, requestReceiveRight;
+    MPI_Request requestSendTop, requestSendBottom, requestSendLeft, requestSendRight;
+    MPI_Request requestReceiveTop, requestReceiveBottom, requestReceiveLeft, requestReceiveRight;
 
 
     if (partitioning_->ownPartitionContainsTopBoundary()) {
@@ -37,7 +38,7 @@ void ParallelPressureSolver::communicateAndBoundaries() {
         for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
             sendTopBuffer[i - discretization_->pIBegin()] = discretization_->p(i, discretization_->pJEnd() - 1);
         }
-        partitioning_->communicate(sendTopBuffer, &receiveTopBuffer, partitioning_->topNeighbourRankNo(), &requestSendTop, &requestReceiveTop);   
+        partitioning_->communicate(sendTopBuffer, receiveTopBuffer, partitioning_->topNeighbourRankNo(), requestSendTop, requestReceiveTop);   
 
     }
 
@@ -51,7 +52,7 @@ void ParallelPressureSolver::communicateAndBoundaries() {
         for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
             sendBottomBuffer[i - discretization_->pIBegin()] = discretization_->p(i, discretization_->pJBegin());
         }
-        partitioning_->communicate(sendBottomBuffer, &receiveBottomBuffer, partitioning_->BottomNeighbourRankNo(), &requestSendBottom, &requestReceiveBottom);   
+        partitioning_->communicate(sendBottomBuffer, receiveBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestSendBottom, requestReceiveBottom);   
 
     }
 
@@ -65,7 +66,7 @@ void ParallelPressureSolver::communicateAndBoundaries() {
         for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
             sendLeftBuffer[j - discretization_->pJBegin()] = discretization_->p(discretization_->pIBegin(), j);
         }
-        partitioning_->communicate(sendLeftBuffer, &receiveLeftBuffer, partitioning_->leftNeighbourRankNo(), &requestSendLeft, &requestReceiveLeft);   
+        partitioning_->communicate(sendLeftBuffer, receiveLeftBuffer, partitioning_->leftNeighbourRankNo(), requestSendLeft, requestReceiveLeft);   
     }
 
     if (partitioning_->ownPartitionContainsRightBoundary()) {
@@ -78,18 +79,18 @@ void ParallelPressureSolver::communicateAndBoundaries() {
         for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
             sendRightBuffer[j - discretization_->pJBegin()] = discretization_->p(discretization_->pIEnd() - 1, j);
         }
-        partitioning_->communicate(sendRightBuffer, &receiveRightBuffer, partitioning_->rightNeighbourRankNo(), &requestSendRight, &requestReceiveRight);   
+        partitioning_->communicate(sendRightBuffer, receiveRightBuffer, partitioning_->rightNeighbourRankNo(), requestSendRight, requestReceiveRight);   
     }
 
     //! TODO: Move to the place where needed
-    MPI_wait(&requestSendTop, MPI_STATUS_IGNORE);
-    MPI_wait(&requestReceiveTop, MPI_STATUS_IGNORE);
-    MPI_wait(&requestSendBottom, MPI_STATUS_IGNORE);
-    MPI_wait(&requestReceiveBottom, MPI_STATUS_IGNORE);
-    MPI_wait(&requestSendLeft, MPI_STATUS_IGNORE);
-    MPI_wait(&requestReceiveLeft, MPI_STATUS_IGNORE);
-    MPI_wait(&requestSendRight, MPI_STATUS_IGNORE);
-    MPI_wait(&requestReceiveRight, MPI_STATUS_IGNORE);
+    MPI_Wait(&requestSendTop, MPI_STATUS_IGNORE);
+    MPI_Wait(&requestReceiveTop, MPI_STATUS_IGNORE);
+    MPI_Wait(&requestSendBottom, MPI_STATUS_IGNORE);
+    MPI_Wait(&requestReceiveBottom, MPI_STATUS_IGNORE);
+    MPI_Wait(&requestSendLeft, MPI_STATUS_IGNORE);
+    MPI_Wait(&requestReceiveLeft, MPI_STATUS_IGNORE);
+    MPI_Wait(&requestSendRight, MPI_STATUS_IGNORE);
+    MPI_Wait(&requestReceiveRight, MPI_STATUS_IGNORE);
 
     for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
         discretization_->p(i, discretization_->pJBegin() - 1) = receiveBottomBuffer[i - discretization_->pIBegin()];

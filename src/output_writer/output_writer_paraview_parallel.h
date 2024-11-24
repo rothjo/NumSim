@@ -1,7 +1,7 @@
 #pragma once
 
 #include "output_writer/output_writer.h"
-#include "discretization/1_discretization.h"
+#include "discretization/discretization.h"
 
 #include <vtkSmartPointer.h>
 #include <vtkXMLImageDataWriter.h>

@@ -3,6 +3,8 @@
 #include <array>
 #include <mpi.h>
 #include <cassert>
+#include <iostream>
+#include <vector>
 
 class Partitioning
 {
@@ -63,7 +65,7 @@ public:
   double globalSum(double localValue) const;
 
   //! 
-  void communicate(std::vector<double> valuesToSend, std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_request requestSend, MPI_request requestReceive);
+  void communicate(std::vector<double> valuesToSend, std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_Request &requestSend, MPI_Request &requestReceive);
 
 
   //! TODO: sendToTop, Bottom, Left, Right

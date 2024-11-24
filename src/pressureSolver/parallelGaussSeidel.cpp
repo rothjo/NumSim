@@ -18,7 +18,7 @@ void ParallelGaussSeidel::solve() {
     while (residualNorm2_ > eps2 && iteration < maximumNumberOfIterations_) {
         ++iteration;
 
-        if (partioning_->nodeOffsetSum() % 2 == 0) {
+        if (partitioning_->nodeOffsetSum() % 2 == 0) {
 
             // Go through all cells beginning in the bottom left corner
             for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {

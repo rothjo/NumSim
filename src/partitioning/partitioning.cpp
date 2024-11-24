@@ -125,7 +125,7 @@ double Partitioning::globalSum(double localValue) const {
 
 
 // MPI_wait is still required after this function
-void Partitioning::communicate(std::vector<double> valuesToSend, std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_request &requestSend, MPI_request &requestReceive) {
+void Partitioning::communicate(std::vector<double> valuesToSend, std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_Request &requestSend, MPI_Request &requestReceive) {
 
     const int nValuesToSend = valuesToSend.size();
     const int nValuesToReceive = valuesToReceive.size();
