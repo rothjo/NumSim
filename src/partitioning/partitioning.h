@@ -56,13 +56,24 @@ public:
   //! used in OutputWriterParaviewParallel
   std::array<int,2> nodeOffset() const;
 
+  //! get the sum of the offset in x and y direction
+  int nodeOffsetSum() const;
+
+  //! get the global sum over all ranks of a local value
+  double globalSum(double localValue) const;
+
+  //! 
+  void communicate(std::vector<double> valuesToSend, std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_request requestSend, MPI_request requestReceive);
+
+
   //! TODO: sendToTop, Bottom, Left, Right
-  
+
 private:
   std::array<int,2> nCellsGlobal_;
   std::array<int,2> nCellsLocal_;
   int ownRankNo_;
   int nRanks_;
+  int nodeOffsetSum_;
   std::array<int,2> nSubdomains_;
   std::array<int,2> nodeOffset_;
 };
