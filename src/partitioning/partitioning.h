@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <mpi.h>
+#include <cassert>
 
 class Partitioning
 {
@@ -54,8 +56,13 @@ public:
   //! used in OutputWriterParaviewParallel
   std::array<int,2> nodeOffset() const;
 
-  // sendToTop, Bottom, Left, Right
+  //! TODO: sendToTop, Bottom, Left, Right
+  
 private:
-  // globalCells, localCells
-
+  std::array<int,2> nCellsGlobal_;
+  std::array<int,2> nCellsLocal_;
+  int ownRankNo_;
+  int nRanks_;
+  std::array<int,2> nSubdomains_;
+  std::array<int,2> nodeOffset_;
 };
