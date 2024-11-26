@@ -25,6 +25,7 @@ void ParallelPressureSolver::communicateAndBoundaries() {
 
     MPI_Request requestSendTop, requestSendBottom, requestSendLeft, requestSendRight;
     MPI_Request requestReceiveTop, requestReceiveBottom, requestReceiveLeft, requestReceiveRight;
+    std::vector<MPI_Request> requests = {requestSendTop, requestSendBottom, requestSendLeft, requestSendRight, requestReceiveTop, requestReceiveBottom, requestReceiveLeft, requestReceiveRight};
 
 
     if (partitioning_->ownPartitionContainsTopBoundary()) {
@@ -83,14 +84,7 @@ void ParallelPressureSolver::communicateAndBoundaries() {
     }
 
     //! TODO: Move to the place where needed
-    MPI_Wait(&requestSendTop, MPI_STATUS_IGNORE);
-    MPI_Wait(&requestReceiveTop, MPI_STATUS_IGNORE);
-    MPI_Wait(&requestSendBottom, MPI_STATUS_IGNORE);
-    MPI_Wait(&requestReceiveBottom, MPI_STATUS_IGNORE);
-    MPI_Wait(&requestSendLeft, MPI_STATUS_IGNORE);
-    MPI_Wait(&requestReceiveLeft, MPI_STATUS_IGNORE);
-    MPI_Wait(&requestSendRight, MPI_STATUS_IGNORE);
-    MPI_Wait(&requestReceiveRight, MPI_STATUS_IGNORE);
+    MPI_Waitall(requests.size(), requests.data(), MPI_STATUS_IGNORE);
 
     for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
         discretization_->p(i, discretization_->pJBegin() - 1) = receiveBottomBuffer[i - discretization_->pIBegin()];

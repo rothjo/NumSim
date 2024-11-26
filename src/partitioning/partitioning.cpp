@@ -124,12 +124,25 @@ double Partitioning::globalSum(double localValue) const {
 }
 
 
+double Partitioning::globalMin(double localValue) const {
+    double globalValue = 0.0;
+    MPI_Allreduce(&localValue, &globalValue, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+    return globalValue;
+}
+
+
+void Partitioning::send(std::vector<double> valuesToSend, int neighbourRankNo, MPI_Request &requestSend) {
+    const int nValuesToSend = valuesToSend.size();
+    MPI_Isend(valuesToSend.data(), nValuesToSend, MPI_DOUBLE, neighbourRankNo, 0, MPI_COMM_WORLD, &requestSend);
+}
+
+void Partitioning::receive(std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_Request &requestReceive) {
+    const int nValuesToReceive = valuesToReceive.size();
+    MPI_Irecv(valuesToReceive.data(), nValuesToReceive, MPI_DOUBLE, neighbourRankNo, 0, MPI_COMM_WORLD, &requestReceive);
+}
+
 // MPI_wait is still required after this function
 void Partitioning::communicate(std::vector<double> valuesToSend, std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_Request &requestSend, MPI_Request &requestReceive) {
-
-    const int nValuesToSend = valuesToSend.size();
-    const int nValuesToReceive = valuesToReceive.size();
-
-    MPI_Isend(valuesToSend.data(), nValuesToSend, MPI_DOUBLE, neighbourRankNo, 0, MPI_COMM_WORLD, &requestSend);
-    MPI_Irecv(valuesToReceive.data(), nValuesToReceive, MPI_DOUBLE, neighbourRankNo, 0, MPI_COMM_WORLD, &requestReceive);
+    this->send(valuesToSend, neighbourRankNo, requestSend);
+    this->receive(valuesToReceive, neighbourRankNo, requestReceive);
 }
