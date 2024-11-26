@@ -17,8 +17,8 @@ void Computation::initialize(int argc, char* argv[]) {
     }
 
     // init output writers
-    outputWriterParaview_ = std::make_unique<OutputWriterParaview>(discretization_);
-    outputWriterText_ = std::make_unique<OutputWriterText>(discretization_);
+    // outputWriterParaview_ = std::make_unique<OutputWriterParaview>(discretization_);
+    // outputWriterText_ = std::make_unique<OutputWriterText>(discretization_);
 
     // init pressure solvers
     if (settings_.pressureSolver == "SOR") {
@@ -61,7 +61,7 @@ void Computation::runSimulation() {
 
         computeVelocities();
 
-        outputWriterParaview_->writeFile(time); // Output
+        // outputWriterParaview_->writeFile(time); // Output
         // outputWriterText_->writeFile(time); // Output
     }
 }

@@ -21,7 +21,7 @@ void ParallelComputation::initialize(int argc, char* argv[]) {
 
     // init output writers
     // outputWriterParaview_ = std::make_unique<OutputWriterParaview>(discretization_);
-    outputWriterText_ = std::make_unique<OutputWriterTextParallel>(discretization_, &partitioning_);
+    // outputWriterText_ = std::make_unique<OutputWriterTextParallel>(discretization_, partitioning_);
 
     // init pressure solvers
     if (settings_.pressureSolver == "SOR") {
@@ -45,8 +45,10 @@ void ParallelComputation::runSimulation() {
     while (time < (settings_.endTime - time_epsilon)) {
 
         applyBoundaryValues();
+        std::cout << "1\n" << std::endl;
         
         computeTimeStepWidth();
+        std::cout << "12\n" << std::endl;
 
         // Check to choose the last time step differently to hit t_end exactly
         if (time + dt_ > settings_.endTime - time_epsilon) {
@@ -54,18 +56,24 @@ void ParallelComputation::runSimulation() {
         }
         time += dt_;
 
+
         computePreliminaryVelocities();
+        std::cout << "123\n" << std::endl;
 
         communicatePreliminaryVelocities();
+        std::cout << "1234\n" << std::endl;
 
         computeRightHandSide();
+        std::cout << "12345\n" << std::endl;
 
         computePressure();
+        std::cout << "123456\n" << std::endl;
 
         computeVelocities();
+        std::cout << "1234567\n" << std::endl;
 
         // outputWriterParaview_->writeFile(time); // Output
-        outputWriterText_->writeFile(time); // Output
+        // outputWriterText_->writeFile(time); // Output
     }
 }
 
@@ -78,14 +86,18 @@ void ParallelComputation::computeTimeStepWidth() {
     const double dy2 = dy * dy;
 
     const double dt_diffusion = (settings_.re / 2.0) * (dx2 * dy2)/(dx2 + dy2);
-
+    
     // compute local timesteps
     const double dt_convection_x = dx / discretization_->u().computeMaxAbs();
     const double dt_convection_y = dy / discretization_->v().computeMaxAbs();
     const double dt_convection_local = std::min(dt_convection_x, dt_convection_y);
 
+    std::cout << "dt_convection_local: " << dt_convection_local << std::endl;
+
+
     // compute global timestep
     double dt_convection = partitioning_->globalMin(dt_convection_local);
+
 
     const double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
 
@@ -234,25 +246,36 @@ void ParallelComputation::applyBoundaryValues() {
 
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 
+    std::cout << receiveuRightBuffer.size() << std::endl;
+
     // Set the received values
-    for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
-        discretization_->u(i, discretization_->uJBegin() - 1) = receiveuBottomBuffer[i - discretization_->uIBegin()];
-        discretization_->u(i, discretization_->uJEnd()) = receiveuTopBuffer[i - discretization_->uIBegin()];
+    if (!partitioning_->ownPartitionContainsTopBoundary()) {
+        for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
+            discretization_->u(i, discretization_->uJBegin() - 1) = receiveuBottomBuffer[i - discretization_->uIBegin()];
+            discretization_->u(i, discretization_->uJEnd()) = receiveuTopBuffer[i - discretization_->uIBegin()];
+        }
     }
 
-    for (int j = discretization_->uJBegin(); j < discretization_->uJEnd(); j++) {
-        discretization_->u(discretization_->pIBegin() - 1, j) = receiveuLeftBuffer[j - discretization_->uJBegin()];
-        discretization_->u(discretization_->uIEnd(), j) = receiveuRightBuffer[j - discretization_->uJBegin()];
+    if(!partitioning_->ownPartitionContainsBottomBoundary()) {
+        for (int j = discretization_->uJBegin(); j < discretization_->uJEnd(); j++) {
+            discretization_->u(discretization_->pIBegin() - 1, j) = receiveuLeftBuffer[j - discretization_->uJBegin()];
+            discretization_->u(discretization_->uIEnd(), j) = receiveuRightBuffer[j - discretization_->uJBegin()];
+        }
     }
 
-    for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
-        discretization_->v(i, discretization_->vJBegin() - 1) = receivevBottomBuffer[i - discretization_->vIBegin()];
-        discretization_->v(i, discretization_->vJEnd()) = receivevTopBuffer[i - discretization_->vIBegin()];
+    if(!partitioning_->ownPartitionContainsLeftBoundary()) {
+        for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
+            discretization_->v(i, discretization_->vJBegin() - 1) = receivevBottomBuffer[i - discretization_->vIBegin()];
+            discretization_->v(i, discretization_->vJEnd()) = receivevTopBuffer[i - discretization_->vIBegin()];
+        }
     }
 
-    for (int j = discretization_->vJBegin(); j < discretization_->vJEnd(); j++) {
-        discretization_->v(discretization_->vIBegin() - 1, j) = receivevLeftBuffer[j - discretization_->vJBegin()];
-        discretization_->v(discretization_->vIEnd(), j) = receivevRightBuffer[j - discretization_->vJBegin()];
+
+    if(!partitioning_->ownPartitionContainsRightBoundary()) {
+        for (int j = discretization_->vJBegin(); j < discretization_->vJEnd(); j++) {
+            discretization_->v(discretization_->vIBegin() - 1, j) = receivevLeftBuffer[j - discretization_->vJBegin()];
+            discretization_->v(discretization_->vIEnd(), j) = receivevRightBuffer[j - discretization_->vJBegin()];
+        }
     }
 
 
@@ -285,9 +308,11 @@ void ParallelComputation::communicatePreliminaryVelocities() {
         partitioning_->send(sendRightBuffer, partitioning_->rightNeighbourRankNo(), requestSendRight);
     }
 
+
     // receive value from bottom neighbour
     if (!partitioning_->ownPartitionContainsBottomBoundary()) {
         partitioning_->receive(receiveBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestReceiveBottom);
+        MPI_Wait(&requestReceiveBottom, MPI_STATUS_IGNORE);
         for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
             discretization_->g(i, discretization_->vJBegin() - 1) = receiveBottomBuffer[i - discretization_->vIBegin()];
         }
@@ -296,11 +321,9 @@ void ParallelComputation::communicatePreliminaryVelocities() {
     // receive value from left neighbour
     if (!partitioning_->ownPartitionContainsLeftBoundary()) {
         partitioning_->receive(receiveLeftBuffer, partitioning_->leftNeighbourRankNo(), requestReceiveLeft);
+        MPI_Wait(&requestReceiveLeft, MPI_STATUS_IGNORE);
         for (int j = discretization_->uJBegin(); j < discretization_->uJEnd(); j++) {
             discretization_->f(discretization_->uIBegin() - 1, j) = receiveLeftBuffer[j - discretization_->uJBegin()];
         }
-    }
-
-    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
-    
+    } 
 }
