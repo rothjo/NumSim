@@ -2,8 +2,8 @@
 
 //! TODO: implement correct decomposition method
 void Partitioning::initialize(std::array<int,2> nCellsGlobal) {
-    nCellsGlobal_ = nCellsGlobal;
     nSubdomains_ = {0, 0};
+    nCellsGlobal_ = nCellsGlobal; 
 
     // int ranks = 2;
 
@@ -124,9 +124,9 @@ double Partitioning::globalSum(double localValue) const {
 }
 
 
-double Partitioning::globalMin(double localValue) const {
+double Partitioning::globalMax(double localValue) const {
     double globalValue = 0.0;
-    MPI_Allreduce(&localValue, &globalValue, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(&localValue, &globalValue, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
     return globalValue;
 }
 

@@ -83,19 +83,37 @@ void ParallelPressureSolver::communicateAndBoundaries() {
         partitioning_->communicate(sendRightBuffer, receiveRightBuffer, partitioning_->rightNeighbourRankNo(), requestSendRight, requestReceiveRight);   
     }
 
+    // Set the buffers to the suiting columns/rows
+    if (!partitioning_->ownPartitionContainsTopBoundary()) {
+        MPI_Wait(&requestReceiveTop, MPI_STATUS_IGNORE);
+        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
+            discretization_->p(i, discretization_->pJEnd()) = receiveTopBuffer[i - discretization_->pIBegin()];
+        }   
+    }
+
+    if (!partitioning_->ownPartitionContainsTopBoundary()) {
+        MPI_Wait(&requestReceiveBottom, MPI_STATUS_IGNORE);
+        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
+            discretization_->p(i, discretization_->pJBegin() - 1) = receiveBottomBuffer[i - discretization_->pIBegin()];
+        }
+    }
+
+    if (!partitioning_->ownPartitionContainsLeftBoundary()) {
+        MPI_Wait(&requestReceiveLeft, MPI_STATUS_IGNORE);
+        for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
+            discretization_->p(discretization_->pIBegin() - 1, j) = receiveLeftBuffer[j - discretization_->pJBegin()];
+        }
+    }
+
+    if (!partitioning_->ownPartitionContainsRightBoundary()) {
+        MPI_Wait(&requestReceiveRight, MPI_STATUS_IGNORE);
+        for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
+            discretization_->p(discretization_->pIEnd(), j) = receiveRightBuffer[j - discretization_->pJBegin()];
+        }
+    }
+
     //! TODO: Move to the place where needed
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUS_IGNORE);
-
-    for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
-        discretization_->p(i, discretization_->pJBegin() - 1) = receiveBottomBuffer[i - discretization_->pIBegin()];
-        discretization_->p(i, discretization_->pJEnd()) = receiveTopBuffer[i - discretization_->pIBegin()];
-    }
-
-    // Set pressure boundary values for the left and right side of the grid
-    for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
-        discretization_->p(discretization_->pIBegin() - 1, j) = receiveLeftBuffer[j - discretization_->pJBegin()];
-        discretization_->p(discretization_->pIEnd(), j) = receiveRightBuffer[j - discretization_->pJBegin()];
-    }
 
 }
 
@@ -116,5 +134,9 @@ void ParallelPressureSolver::computeResidualNorm() {
             residualNorm2 += (discretization_->rhs(i, j) - p_xx - p_yy) * (discretization_->rhs(i, j) - p_xx - p_yy);
         }
     }
+    std::cout  << " Residual: " << residualNorm2 << std::endl;
+    std::cout << "N: " << N << std::endl;
     residualNorm2_ = partitioning_->globalSum(residualNorm2) / N;
+    MPI_Barrier(MPI_COMM_WORLD);
+    std::cout << "Residual norm: " << residualNorm2_ << std::endl;
 }   

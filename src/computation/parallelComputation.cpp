@@ -47,8 +47,10 @@ void ParallelComputation::runSimulation() {
         applyBoundaryValues();
         std::cout << "1\n" << std::endl;
         
+        MPI_Barrier(MPI_COMM_WORLD);
         computeTimeStepWidth();
         std::cout << "12\n" << std::endl;
+        MPI_Barrier(MPI_COMM_WORLD);
 
         // Check to choose the last time step differently to hit t_end exactly
         if (time + dt_ > settings_.endTime - time_epsilon) {
@@ -60,8 +62,10 @@ void ParallelComputation::runSimulation() {
         computePreliminaryVelocities();
         std::cout << "123\n" << std::endl;
 
+        MPI_Barrier(MPI_COMM_WORLD);
         communicatePreliminaryVelocities();
         std::cout << "1234\n" << std::endl;
+        MPI_Barrier(MPI_COMM_WORLD);
 
         computeRightHandSide();
         std::cout << "12345\n" << std::endl;
@@ -86,17 +90,14 @@ void ParallelComputation::computeTimeStepWidth() {
     const double dy2 = dy * dy;
 
     const double dt_diffusion = (settings_.re / 2.0) * (dx2 * dy2)/(dx2 + dy2);
+
+    double u_max = partitioning_->globalMax(discretization_->u().computeMaxAbs());
+    double v_max = partitioning_->globalMax(discretization_->v().computeMaxAbs());
     
     // compute local timesteps
-    const double dt_convection_x = dx / discretization_->u().computeMaxAbs();
-    const double dt_convection_y = dy / discretization_->v().computeMaxAbs();
-    const double dt_convection_local = std::min(dt_convection_x, dt_convection_y);
-
-    std::cout << "dt_convection_local: " << dt_convection_local << std::endl;
-
-
-    // compute global timestep
-    double dt_convection = partitioning_->globalMin(dt_convection_local);
+    const double dt_convection_x = dx / u_max;
+    const double dt_convection_y = dy / v_max;
+    const double dt_convection = std::min(dt_convection_x, dt_convection_y);
 
 
     const double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
@@ -244,12 +245,10 @@ void ParallelComputation::applyBoundaryValues() {
         partitioning_->communicate(sendvRightBuffer, receivevRightBuffer, partitioning_->rightNeighbourRankNo(), requestvSendRight, requestvReceiveRight);   
     }
 
-    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
-
-    std::cout << receiveuRightBuffer.size() << std::endl;
-
     // Set the received values
     if (!partitioning_->ownPartitionContainsTopBoundary()) {
+        MPI_Wait(&requestuReceiveTop, MPI_STATUS_IGNORE);
+        MPI_Wait(&requestvReceiveTop, MPI_STATUS_IGNORE);
         for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
             discretization_->u(i, discretization_->uJBegin() - 1) = receiveuBottomBuffer[i - discretization_->uIBegin()];
             discretization_->u(i, discretization_->uJEnd()) = receiveuTopBuffer[i - discretization_->uIBegin()];
@@ -257,6 +256,8 @@ void ParallelComputation::applyBoundaryValues() {
     }
 
     if(!partitioning_->ownPartitionContainsBottomBoundary()) {
+        MPI_Wait(&requestuReceiveBottom, MPI_STATUS_IGNORE);
+        MPI_Wait(&requestvReceiveBottom, MPI_STATUS_IGNORE);
         for (int j = discretization_->uJBegin(); j < discretization_->uJEnd(); j++) {
             discretization_->u(discretization_->pIBegin() - 1, j) = receiveuLeftBuffer[j - discretization_->uJBegin()];
             discretization_->u(discretization_->uIEnd(), j) = receiveuRightBuffer[j - discretization_->uJBegin()];
@@ -264,6 +265,8 @@ void ParallelComputation::applyBoundaryValues() {
     }
 
     if(!partitioning_->ownPartitionContainsLeftBoundary()) {
+        MPI_Wait(&requestuReceiveLeft, MPI_STATUS_IGNORE);
+        MPI_Wait(&requestvReceiveLeft, MPI_STATUS_IGNORE);
         for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
             discretization_->v(i, discretization_->vJBegin() - 1) = receivevBottomBuffer[i - discretization_->vIBegin()];
             discretization_->v(i, discretization_->vJEnd()) = receivevTopBuffer[i - discretization_->vIBegin()];
@@ -272,13 +275,15 @@ void ParallelComputation::applyBoundaryValues() {
 
 
     if(!partitioning_->ownPartitionContainsRightBoundary()) {
+        MPI_Wait(&requestuReceiveRight, MPI_STATUS_IGNORE);
+        MPI_Wait(&requestvReceiveRight, MPI_STATUS_IGNORE);
         for (int j = discretization_->vJBegin(); j < discretization_->vJEnd(); j++) {
             discretization_->v(discretization_->vIBegin() - 1, j) = receivevLeftBuffer[j - discretization_->vJBegin()];
             discretization_->v(discretization_->vIEnd(), j) = receivevRightBuffer[j - discretization_->vJBegin()];
         }
     }
 
-
+    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 }
 
 void ParallelComputation::communicatePreliminaryVelocities() {
@@ -326,4 +331,5 @@ void ParallelComputation::communicatePreliminaryVelocities() {
             discretization_->f(discretization_->uIBegin() - 1, j) = receiveLeftBuffer[j - discretization_->uJBegin()];
         }
     } 
+    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 }

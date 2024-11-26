@@ -65,7 +65,7 @@ public:
   double globalSum(double localValue) const;
 
   //! get the global minimum over all ranks of a local value
-  double globalMin(double localValue) const;
+  double globalMax(double localValue) const;
 
   //! function to send information
   void send(std::vector<double> valuesToSend, int neighbourRankNo, MPI_Request &requestSend);
