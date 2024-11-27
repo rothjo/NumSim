@@ -40,7 +40,13 @@ protected:
      */
     virtual void applyInitalBoundaryValues();
 
-    virtual void communicatePreliminaryVelocities();
+    /**
+     * Compute the preliminary velocities F and G and set boundary values
+     */
+    // void computePreliminaryVelocities();
+
+    
+    // virtual void communicatePreliminaryVelocities();
 
     // set attributes
     std::shared_ptr<Partitioning> partitioning_;
