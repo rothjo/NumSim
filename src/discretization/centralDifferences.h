@@ -7,7 +7,7 @@
  */
 class CentralDifferences : public Discretization {
 public:
-    CentralDifferences(std::array<int, 2> nCells, std::array<double, 2> meshWidth);
+    CentralDifferences(std::array<int, 2> nCells, std::array<double, 2> meshWidth, std::shared_ptr<Partitioning> partitioning_);
 
     /**
      * Compute the derivative of u^2 in x-direction
