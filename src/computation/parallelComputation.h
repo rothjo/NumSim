@@ -49,7 +49,7 @@ protected:
     // virtual void communicatePreliminaryVelocities();
 
     // set attributes
-    std::shared_ptr<Partitioning> partitioning_;
+    // std::shared_ptr<Partitioning> partitioning_;
     // std::unique_ptr<OutputWriterParaviewParallel> outputWriterParaview_;
     std::unique_ptr<OutputWriterTextParallel> outputWriterText_;
 };

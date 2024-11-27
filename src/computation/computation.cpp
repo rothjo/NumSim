@@ -6,14 +6,15 @@ void Computation::initialize(int argc, char* argv[]) {
     // load settigns from file
     std::string filename = argv[1];
     settings_.loadFromFile(filename);
-
+    partitioning_ = std::make_shared<Partitioning>();
+    partitioning_->initialize(settings_.nCells);
     meshWidth_ = {settings_.physicalSize[0] / settings_.nCells[0], settings_.physicalSize[1] / settings_.nCells[1]};
 
     // init discretization
     if (settings_.useDonorCell) {
-        discretization_ = std::make_shared<DonorCell>(settings_.nCells, meshWidth_, settings_.alpha);
+        discretization_ = std::make_shared<DonorCell>(settings_.nCells, meshWidth_, partitioning_, settings_.alpha);
     } else {
-        discretization_ = std::make_shared<CentralDifferences>(settings_.nCells, meshWidth_);
+        discretization_ = std::make_shared<CentralDifferences>(settings_.nCells, meshWidth_, partitioning_);
     }
 
     // init output writers

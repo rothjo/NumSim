@@ -11,6 +11,7 @@
 #include "output_writer/output_writer_text.h"
 #include "output_writer/output_writer_paraview_parallel.h"
 #include "output_writer/output_writer_text_parallel.h"
+#include "partitioning/partitioning.h"
 #include "settings.h"
 #include <memory>
 #include <iostream>
@@ -88,4 +89,5 @@ protected:
     // std::unique_ptr<OutputWriterText> outputWriterText_;
     std::array<double, 2> meshWidth_;
     double dt_;
+    std::shared_ptr<Partitioning> partitioning_;
 };
