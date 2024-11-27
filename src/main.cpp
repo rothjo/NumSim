@@ -16,17 +16,18 @@
 #include <mpi.h>
 #include "partitioning/partitioning.h"
 #include <array>
+#include <unistd.h>
 
 
 int main(int argc, char *argv[])
 {
-
+  // sleep(15);
   // Computation comp;
   // comp.initialize(argc, argv);
   // comp.runSimulation();
 
   MPI_Init(&argc, &argv);
-  MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+  // MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
   ParallelComputation parallelcomp;
   parallelcomp.initialize(argc, argv);
   parallelcomp.runSimulation();

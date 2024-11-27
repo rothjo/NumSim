@@ -1,5 +1,7 @@
 #include "parallelComputation.h"
 #include <cmath>
+#include <unistd.h>
+
 
 void ParallelComputation::initialize(int argc, char* argv[]) {
     // load settigns from file
@@ -45,12 +47,10 @@ void ParallelComputation::runSimulation() {
     while (time < (settings_.endTime - time_epsilon)) {
 
         applyBoundaryValues();
-        std::cout << "1\n" << std::endl;
-        
-        MPI_Barrier(MPI_COMM_WORLD);
+       
+
         computeTimeStepWidth();
-        std::cout << "12\n" << std::endl;
-        MPI_Barrier(MPI_COMM_WORLD);
+  
 
         // Check to choose the last time step differently to hit t_end exactly
         if (time + dt_ > settings_.endTime - time_epsilon) {
@@ -58,23 +58,19 @@ void ParallelComputation::runSimulation() {
         }
         time += dt_;
 
-
+    	
         computePreliminaryVelocities();
-        std::cout << "123\n" << std::endl;
-
-        // MPI_Barrier(MPI_COMM_WORLD);
-        // communicatePreliminaryVelocities();
-        std::cout << "1234\n" << std::endl;
-        MPI_Barrier(MPI_COMM_WORLD);
+    
 
         computeRightHandSide();
-        std::cout << "12345\n" << std::endl;
+        
+      
 
         computePressure();
-        std::cout << "123456\n" << std::endl;
+        
 
         computeVelocities();
-        std::cout << "1234567\n" << std::endl;
+
 
         // outputWriterParaview_->writeFile(time); // Output
         // outputWriterText_->writeFile(time); // Output
