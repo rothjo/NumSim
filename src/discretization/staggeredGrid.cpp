@@ -16,7 +16,7 @@ StaggeredGrid::StaggeredGrid(std::array<int, 2> nCells, std::array<double, 2> me
       u_(FieldVariable({nCells[0] + 3, nCells[1] + 3}, {0.0, -0.5 * meshWidth[1]}, meshWidth)),
       v_(FieldVariable({nCells[0] + 3, nCells[1] + 3}, {-0.5 * meshWidth[0], 0.0}, meshWidth)),
       p_(FieldVariable({nCells[0] + 3, nCells[1] + 3}, {-0.5 * meshWidth[0], -0.5 * meshWidth[1]}, meshWidth)),
-      rhs_(FieldVariable({nCells[0] + 2, nCells[1] + 2}, {-0.5 * meshWidth[0], -0.5 * meshWidth[1]}, meshWidth)),
+      rhs_(FieldVariable({nCells[0] + 3, nCells[1] + 3}, {-0.5 * meshWidth[0], -0.5 * meshWidth[1]}, meshWidth)),
       f_(FieldVariable({nCells[0] + 3, nCells[1] + 3}, {0.0, -0.5 * meshWidth[1]}, meshWidth)),
       g_(FieldVariable({nCells[0] + 3, nCells[1] + 3}, {-0.5 * meshWidth[0], 0.0}, meshWidth)) {
         containsLeftBoundary = partitioning_->ownPartitionContainsLeftBoundary();

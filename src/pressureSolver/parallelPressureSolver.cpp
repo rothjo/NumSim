@@ -31,7 +31,7 @@ void ParallelPressureSolver::communicateAndBoundaries() {
     if (partitioning_->ownPartitionContainsTopBoundary()) {
         // Set boundary values
         for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
-            discretization_->p(i, discretization_->pJEnd()) = discretization_->p(i, discretization_->pJEnd() - 1);
+            discretization_->p(i, discretization_->pJEnd()) = discretization_->p(i, discretization_->pJEnd() - 1); 
         }
     } else {
         // Send top boundary values to top neighbour
@@ -39,7 +39,9 @@ void ParallelPressureSolver::communicateAndBoundaries() {
         for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
             sendTopBuffer[i - discretization_->pIBegin()] = discretization_->p(i, discretization_->pJEnd() - 1);
         }
-        partitioning_->communicate(sendTopBuffer, receiveTopBuffer, partitioning_->topNeighbourRankNo(), requestSendTop, requestReceiveTop);
+        partitioning_->send(sendTopBuffer, partitioning_->topNeighbourRankNo(), requestSendTop);
+        partitioning_->receive(receiveTopBuffer, partitioning_->topNeighbourRankNo(), requestReceiveTop);
+        // partitioning_->communicate(sendTopBuffer, receiveTopBuffer, partitioning_->topNeighbourRankNo(), requestSendTop, requestReceiveTop);
         MPI_Request_free(&requestSendTop);
 
     }
@@ -54,7 +56,9 @@ void ParallelPressureSolver::communicateAndBoundaries() {
         for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
             sendBottomBuffer[i - discretization_->pIBegin()] = discretization_->p(i, discretization_->pJBegin());
         }
-        partitioning_->communicate(sendBottomBuffer, receiveBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestSendBottom, requestReceiveBottom);   
+        // partitioning_->communicate(sendBottomBuffer, receiveBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestSendBottom, requestReceiveBottom); 
+        partitioning_->send(sendBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestSendBottom);
+        partitioning_->receive(receiveBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestReceiveBottom);  
         MPI_Request_free(&requestSendBottom);
     }
 
@@ -68,7 +72,9 @@ void ParallelPressureSolver::communicateAndBoundaries() {
         for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
             sendLeftBuffer[j - discretization_->pJBegin()] = discretization_->p(discretization_->pIBegin(), j);
         }
-        partitioning_->communicate(sendLeftBuffer, receiveLeftBuffer, partitioning_->leftNeighbourRankNo(), requestSendLeft, requestReceiveLeft);
+        // partitioning_->communicate(sendLeftBuffer, receiveLeftBuffer, partitioning_->leftNeighbourRankNo(), requestSendLeft, requestReceiveLeft);
+        partitioning_->send(sendLeftBuffer, partitioning_->leftNeighbourRankNo(), requestSendLeft);
+        partitioning_->receive(receiveLeftBuffer, partitioning_->leftNeighbourRankNo(), requestReceiveLeft);
         MPI_Request_free(&requestSendLeft);  
     }
 
@@ -82,7 +88,9 @@ void ParallelPressureSolver::communicateAndBoundaries() {
         for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
             sendRightBuffer[j - discretization_->pJBegin()] = discretization_->p(discretization_->pIEnd() - 1, j);
         }
-        partitioning_->communicate(sendRightBuffer, receiveRightBuffer, partitioning_->rightNeighbourRankNo(), requestSendRight, requestReceiveRight);
+        // partitioning_->communicate(sendRightBuffer, receiveRightBuffer, partitioning_->rightNeighbourRankNo(), requestSendRight, requestReceiveRight);
+        partitioning_->send(sendRightBuffer, partitioning_->rightNeighbourRankNo(), requestSendRight);
+        partitioning_->receive(receiveRightBuffer, partitioning_->rightNeighbourRankNo(), requestReceiveRight);
         MPI_Request_free(&requestSendRight);   
     }
 

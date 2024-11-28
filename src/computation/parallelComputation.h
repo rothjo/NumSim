@@ -7,6 +7,7 @@
 // #include "output_writer/output_writer_paraview_parallel.h"
 #include "output_writer/output_writer_text_parallel.h"
 #include "output_writer/output_writer.h"
+#include "mpi.h"
 
 class ParallelComputation : public Computation {
 public:
