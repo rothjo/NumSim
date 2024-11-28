@@ -38,11 +38,3 @@ double Array2D::operator()(int i, int j) const
 
   return data_[index];
 }
-
-void Array2D::setToZero() {
-  std::fill(data_.begin(), data_.end(), 0.0);
-}
-
-void* Array2D::data() {
-  return data_.data();
-}

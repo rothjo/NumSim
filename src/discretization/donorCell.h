@@ -7,7 +7,7 @@
  */
 class DonorCell : public Discretization {
 public:
-    DonorCell(std::array<int, 2> nCells, std::array<double,2> meshWidth, std::shared_ptr<Partitioning> partitioning_, double alpha);
+    DonorCell(std::array<int, 2> nCells, std::array<double,2> meshWidth, double alpha);
 
     /**
      * Compute the derivative of u^2 in x-direction

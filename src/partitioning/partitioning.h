@@ -3,8 +3,6 @@
 #include <array>
 #include <mpi.h>
 #include <cassert>
-#include <iostream>
-#include <vector>
 
 class Partitioning
 {
@@ -58,33 +56,13 @@ public:
   //! used in OutputWriterParaviewParallel
   std::array<int,2> nodeOffset() const;
 
-  //! get the sum of the offset in x and y direction
-  int nodeOffsetSum() const;
-
-  //! get the global sum over all ranks of a local value
-  double globalSum(double localValue) const;
-
-  //! get the global minimum over all ranks of a local value
-  double globalMax(double localValue) const;
-
-  //! function to send information
-  void send(std::vector<double> valuesToSend, int neighbourRankNo, MPI_Request &requestSend);
-
-  //! function to receive information
-  void receive(std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_Request &requestReceive);
-
-  //! function to receive and send, full communication
-  void communicate(std::vector<double> valuesToSend, std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_Request &requestSend, MPI_Request &requestReceive);
-
-
   //! TODO: sendToTop, Bottom, Left, Right
-
+  
 private:
   std::array<int,2> nCellsGlobal_;
   std::array<int,2> nCellsLocal_;
   int ownRankNo_;
   int nRanks_;
-  int nodeOffsetSum_;
   std::array<int,2> nSubdomains_;
   std::array<int,2> nodeOffset_;
 };

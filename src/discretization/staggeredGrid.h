@@ -2,15 +2,13 @@
 
 #include <vector>
 #include <array>
-#include <memory>
-#include "storage/FieldVariable.h"
-#include "partitioning/partitioning.h"
+#include "../storage/FieldVariable.h"
 
 class StaggeredGrid
 {
 public:
     //! constructor
-    StaggeredGrid(std::array<int,2> nCells, std::array<double,2> meshWidth, std::shared_ptr<Partitioning> partitioning_);
+    StaggeredGrid(std::array<int,2> nCells, std::array<double,2> meshWidth);
 
     //! get the mesh width in x and y direction
     const std::array<double,2> meshWidth() const;
@@ -107,10 +105,4 @@ protected:
 
     const std::array< int, 2 > nCells_;
     const std::array< double, 2 > meshWidth_;
-    std::shared_ptr<Partitioning> partitioning_;
-
-    bool containsLeftBoundary;
-    bool containsRightBoundary;
-    bool containsTopBoundary;
-    bool containsBottomBoundary;
 };

@@ -2,8 +2,8 @@
 #include <cmath>
 #include <iostream>
 
-DonorCell::DonorCell(std::array<int, 2> nCells, std::array<double,2> meshWidth, std::shared_ptr<Partitioning> partitioning_, double alpha) : 
-    Discretization(nCells, meshWidth, partitioning_), alpha_(alpha) {}
+DonorCell::DonorCell(std::array<int, 2> nCells, std::array<double,2> meshWidth, double alpha) : 
+    Discretization(nCells, meshWidth), alpha_(alpha) {}
 
 double DonorCell::computeDu2Dx(int i, int j) const {
     const double u_left_sum = (u(i,j) + u(i-1,j)) / 2.0;

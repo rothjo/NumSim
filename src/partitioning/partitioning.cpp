@@ -2,8 +2,8 @@
 
 //! TODO: implement correct decomposition method
 void Partitioning::initialize(std::array<int,2> nCellsGlobal) {
+    nCellsGlobal_ = nCellsGlobal;
     nSubdomains_ = {0, 0};
-    nCellsGlobal_ = nCellsGlobal; 
 
     // int ranks = 2;
 
@@ -45,8 +45,6 @@ void Partitioning::initialize(std::array<int,2> nCellsGlobal) {
     } else {
         nodeOffset_[1] += yRemainder;
     }
-
-    nodeOffsetSum_ = nodeOffset_[0] + nodeOffset_[1];
 
     // std::cout << "Rank: " << ownRankNo_ << std::endl;
     // std::cout << " nCellsLocal: " << nCellsLocal_[0] << " " << nCellsLocal_[1] << std::endl;
@@ -111,38 +109,4 @@ int Partitioning::bottomNeighbourRankNo() const {
 
 std::array<int,2> Partitioning::nodeOffset() const {
     return nodeOffset_;
-}
-
-int Partitioning::nodeOffsetSum() const {
-    return nodeOffsetSum_;
-}
-
-double Partitioning::globalSum(double localValue) const {
-    double globalValue = 0.0;
-    MPI_Allreduce(&localValue, &globalValue, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    return globalValue;
-}
-
-
-double Partitioning::globalMax(double localValue) const {
-    double globalValue = 0.0;
-    MPI_Allreduce(&localValue, &globalValue, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-    return globalValue;
-}
-
-
-void Partitioning::send(std::vector<double> valuesToSend, int neighbourRankNo, MPI_Request &requestSend) {
-    const int nValuesToSend = valuesToSend.size();
-    MPI_Isend(valuesToSend.data(), nValuesToSend, MPI_DOUBLE, neighbourRankNo, 0, MPI_COMM_WORLD, &requestSend);
-}
-
-void Partitioning::receive(std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_Request &requestReceive) {
-    const int nValuesToReceive = valuesToReceive.size();
-    MPI_Irecv(valuesToReceive.data(), nValuesToReceive, MPI_DOUBLE, neighbourRankNo, 0, MPI_COMM_WORLD, &requestReceive);
-}
-
-// MPI_wait is still required after this function
-void Partitioning::communicate(std::vector<double> valuesToSend, std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_Request &requestSend, MPI_Request &requestReceive) {
-    this->send(valuesToSend, neighbourRankNo, requestSend);
-    this->receive(valuesToReceive, neighbourRankNo, requestReceive);
 }
