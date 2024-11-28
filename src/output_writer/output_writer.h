@@ -1,6 +1,6 @@
 #pragma once
 
-#include "discretization/1_discretization.h"
+#include "discretization/discretization.h"
 #include "partitioning/partitioning.h"
 
 #include <memory>

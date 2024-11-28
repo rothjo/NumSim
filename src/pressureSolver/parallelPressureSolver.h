@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
-#include "../discretization/discretization.h"
-#include "../partitioning/partitioning.h"
+#include "discretization/discretization.h"
+#include "partitioning/partitioning.h"
 #include "pressureSolver.h"
 
 
@@ -22,24 +22,10 @@ public:
 protected:
 
     /**
-     * Set boundary values at the bottom boundary
+     * Set boundary values for the pressure, needs to be called after every iteration
+     * Also, send necessary information to neighbouring ranks
      */
-    void setBoundaryValuesBottom();
-
-    /**
-     * Set boundary values at the top boundary
-     */
-    void setBoundaryValuesTop();
-
-    /**
-     * Set boundary values at the left boundary
-     */
-    void setBoundaryValuesLeft();
-
-    /**
-     * Set boundary values at the right boundary
-     */
-    void setBoundaryValuesRight();
+    void communicateAndBoundaries();
     
     /**
      * compute residualNorm

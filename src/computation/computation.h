@@ -9,6 +9,9 @@
 #include "output_writer/output_writer.h"
 #include "output_writer/output_writer_paraview.h"
 #include "output_writer/output_writer_text.h"
+#include "output_writer/output_writer_paraview_parallel.h"
+#include "output_writer/output_writer_text_parallel.h"
+#include "partitioning/partitioning.h"
 #include "settings.h"
 #include <memory>
 #include <iostream>
@@ -82,8 +85,9 @@ protected:
     Settings settings_;
     std::shared_ptr<Discretization> discretization_;
     std::unique_ptr<PressureSolver> pressureSolver_;
-    std::unique_ptr<OutputWriterParaview> outputWriterParaview_;
-    std::unique_ptr<OutputWriterText> outputWriterText_;
+    // std::unique_ptr<OutputWriterParaview> outputWriterParaview_;
+    // std::unique_ptr<OutputWriterText> outputWriterText_;
     std::array<double, 2> meshWidth_;
     double dt_;
+    std::shared_ptr<Partitioning> partitioning_;
 };
