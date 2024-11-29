@@ -64,6 +64,5 @@ void ParallelGaussSeidel::solve() {
         computeResidualNorm(); 
     }
     this->numberOfIterations_ = iteration;
-    std::cout << "Number of iterations: " << numberOfIterations_ << std::endl;
 }
     
