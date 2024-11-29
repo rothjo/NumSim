@@ -5,7 +5,7 @@
 #include "pressureSolver/parallelPressureSolver.h"
 #include "pressureSolver/parallelGaussSeidel.h"
 #include "pressureSolver/parallel_sor.h"
-// #include "output_writer/output_writer_paraview_parallel.h"
+#include "output_writer/output_writer_paraview_parallel.h"
 #include "output_writer/output_writer_text_parallel.h"
 #include "output_writer/output_writer.h"
 #include "mpi.h"
@@ -52,6 +52,6 @@ protected:
 
     // set attributes
     // std::shared_ptr<Partitioning> partitioning_;
-    // std::unique_ptr<OutputWriterParaviewParallel> outputWriterParaview_;
+    std::unique_ptr<OutputWriterParaviewParallel> outputWriterParaview_;
     std::unique_ptr<OutputWriterTextParallel> outputWriterText_;
 };

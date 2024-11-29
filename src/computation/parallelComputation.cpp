@@ -22,7 +22,7 @@ void ParallelComputation::initialize(int argc, char* argv[]) {
     }
 
     // init output writers
-    // outputWriterParaview_ = std::make_unique<OutputWriterParaview>(discretization_);
+    outputWriterParaview_ = std::make_unique<OutputWriterParaviewParallel>(discretization_, *partitioning_);
     outputWriterText_ = std::make_unique<OutputWriterTextParallel>(discretization_, *partitioning_);
 
     // init pressure solvers
@@ -72,7 +72,10 @@ void ParallelComputation::runSimulation() {
         
 
         computeVelocities();
-    
+        
+
+        outputWriterParaview_->writeFile(time); // Output
+        outputWriterText_->writeFile(time); // Output
 
         // if (partitioning_->ownRankNo() == 0){
 
@@ -199,6 +202,7 @@ void ParallelComputation::applyBoundaryValues() {
         // partitioning_->communicate(vTopBuffer, vTopBuffer, partitioning_->topNeighbourRankNo(), requestvTop, requestvTop); 
         // MPI_Request_free(&requestuSendTop);
         // MPI_Request_free(&requestvSendTop);
+        
     }
 
     // Communication to bottom neighbour
