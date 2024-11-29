@@ -17,6 +17,7 @@ add_executable(${PROJECT_NAME}
    pressureSolver/gaussSeidel.cpp
    pressureSolver/sor.cpp
    pressureSolver/parallelGaussSeidel.cpp
+   pressureSolver/parallel_sor.cpp
    pressureSolver/parallelPressureSolver.cpp
    computation/computation.cpp
    computation/parallelComputation.cpp

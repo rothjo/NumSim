@@ -17,7 +17,7 @@ void ParallelGaussSeidel::solve() {
 
     while (residualNorm2_ > eps2 && iteration < maximumNumberOfIterations_) {
         ++iteration;
-
+        
         if (partitioning_->nodeOffsetSum() % 2 == 0) {
 
             // Go through all cells beginning in the bottom left corner
@@ -59,11 +59,11 @@ void ParallelGaussSeidel::solve() {
                 }
             } 
         }  
-        communicateAndBoundaries();
 
+        communicateAndBoundaries();
         computeResidualNorm(); 
     }
     this->numberOfIterations_ = iteration;
-
+    std::cout << "Number of iterations: " << numberOfIterations_ << std::endl;
 }
     
