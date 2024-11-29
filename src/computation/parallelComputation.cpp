@@ -30,6 +30,9 @@ void ParallelComputation::initialize(int argc, char* argv[]) {
         pressureSolver_ = std::make_unique<ParallelSOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega, partitioning_);
     } else if (settings_.pressureSolver == "GaussSeidel") {
         pressureSolver_ = std::make_unique<ParallelGaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+    } else if (settings_.pressureSolver == "CG") {
+        pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+
     } else {
         std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
         std::exit(1);

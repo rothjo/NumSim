@@ -5,6 +5,7 @@
 #include "pressureSolver/parallelPressureSolver.h"
 #include "pressureSolver/parallelGaussSeidel.h"
 #include "pressureSolver/parallel_sor.h"
+#include "pressureSolver/parallelcg.h"
 #include "output_writer/output_writer_paraview_parallel.h"
 #include "output_writer/output_writer_text_parallel.h"
 #include "output_writer/output_writer.h"
