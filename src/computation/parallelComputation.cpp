@@ -62,7 +62,7 @@ void ParallelComputation::runSimulation() {
         // Output
         if (time >= output) {
             outputWriterParaview_->writeFile(time); // Output
-            outputWriterText_->writeFile(time); // Output
+            // outputWriterText_->writeFile(time); // Output
             output++;
         }
 
