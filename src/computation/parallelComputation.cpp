@@ -59,13 +59,6 @@ void ParallelComputation::runSimulation() {
         }
         time += dt_;
 
-        // Output
-        if (time >= output) {
-            outputWriterParaview_->writeFile(time); // Output
-            // outputWriterText_->writeFile(time); // Output
-            output++;
-        }
-
     	
         computePreliminaryVelocities();
     
@@ -78,6 +71,13 @@ void ParallelComputation::runSimulation() {
         
 
         computeVelocities();
+
+        // Output
+        if (time >= output) {
+            outputWriterParaview_->writeFile(time); // Output
+            // outputWriterText_->writeFile(time); // Output
+            output++;
+        }
         
     }
 }
