@@ -40,8 +40,9 @@ void ParallelComputation::runSimulation() {
     applyInitalBoundaryValues();
 
     double time = 0.0;
-    int t_iter = 0;
     double time_epsilon = 1e-8;
+    int output = 1;
+
     
     // Loop over all time steps until t_end is reached
     while (time < (settings_.endTime - time_epsilon)) {
@@ -58,6 +59,13 @@ void ParallelComputation::runSimulation() {
         }
         time += dt_;
 
+        // Output
+        if (time >= output) {
+            outputWriterParaview_->writeFile(time); // Output
+            // outputWriterText_->writeFile(time); // Output
+            output++;
+        }
+
     	
         computePreliminaryVelocities();
     
@@ -71,9 +79,6 @@ void ParallelComputation::runSimulation() {
 
         computeVelocities();
         
-
-        outputWriterParaview_->writeFile(time); // Output
-        // outputWriterText_->writeFile(time); // Output
     }
 }
 
