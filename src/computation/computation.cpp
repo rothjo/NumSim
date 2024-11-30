@@ -26,6 +26,8 @@ void Computation::initialize(int argc, char* argv[]) {
         pressureSolver_ = std::make_unique<SOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega);
     } else if (settings_.pressureSolver == "GaussSeidel") {
         pressureSolver_ = std::make_unique<GaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
+    } else if (settings_.pressureSolver == "CG") {
+        pressureSolver_ = std::make_unique<CG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
     } else {
         std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
         std::exit(1);
