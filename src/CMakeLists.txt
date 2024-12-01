@@ -20,6 +20,7 @@ add_executable(${PROJECT_NAME}
    pressureSolver/parallel_sor.cpp
    pressureSolver/parallelPressureSolver.cpp
    pressureSolver/cg.cpp
+   pressureSolver/parallel_cg.cpp
    computation/computation.cpp
    computation/parallelComputation.cpp
    settings.cpp
