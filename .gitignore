@@ -84,6 +84,4 @@ cmake_install.cmake
 # Ignore logs
 *.log
 
-*.txt
-*.vti
 *.Identifier
