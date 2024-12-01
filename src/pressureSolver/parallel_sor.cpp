@@ -1,4 +1,4 @@
-#include "pressureSolver/parallel_sor.h"
+#include "parallel_sor.h"
 
 #include <cmath>
 
@@ -16,9 +16,7 @@ ParallelSOR::ParallelSOR(std::shared_ptr<Discretization> discretization,
                          double omega,
                          std::shared_ptr<Partitioning> partitioning) :
         ParallelPressureSolver(discretization, epsilon, maximumNumberOfIterations, partitioning),
-        omega_(omega) {
-
-}
+        omega_(omega) {}
 
 /**
  * solve the Poisson problem for the pressure, using the rhs and p field variables in the staggeredGrid
