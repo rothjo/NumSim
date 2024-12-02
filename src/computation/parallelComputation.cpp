@@ -26,16 +26,17 @@ void ParallelComputation::initialize(int argc, char* argv[]) {
     outputWriterText_ = std::make_unique<OutputWriterTextParallel>(discretization_, *partitioning_);
 
     // init pressure solvers
-    if (settings_.pressureSolver == "SOR") {
-        pressureSolver_ = std::make_unique<ParallelSOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega, partitioning_);
-    } else if (settings_.pressureSolver == "GaussSeidel") {
-        pressureSolver_ = std::make_unique<ParallelGaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
-    } else if (settings_.pressureSolver == "CG") {
-        pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
-    } else {
-        std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
-        std::exit(1);
-    }
+    // if (settings_.pressureSolver == "SOR") {
+    //     pressureSolver_ = std::make_unique<ParallelSOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega, partitioning_);
+    // } else if (settings_.pressureSolver == "GaussSeidel") {
+    //     pressureSolver_ = std::make_unique<ParallelGaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+    // } else if (settings_.pressureSolver == "CG") {
+    //     pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+    // } else {
+    //     std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
+    //     std::exit(1);
+    // }
+    pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
 }
 
 void ParallelComputation::runSimulation() {
