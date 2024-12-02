@@ -6,6 +6,7 @@
 #include "pressureSolver/pressureSolver.h"
 #include "pressureSolver/gaussSeidel.h"
 #include "pressureSolver/sor.h"
+#include "pressureSolver/cg.h"
 #include "output_writer/output_writer.h"
 #include "output_writer/output_writer_paraview.h"
 #include "output_writer/output_writer_text.h"
