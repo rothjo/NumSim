@@ -8,7 +8,7 @@
  */
 class CG : public PressureSolver {
 public:
-    CG(std::shared_ptr<Discretization> discretization, double epsilon, int maximumNumberOfIterations, std::shared_ptr<Partitioning> partitioning);
+    CG(std::shared_ptr<Discretization> discretization, double epsilon, int maximumNumberOfIterations);
 
     /**
      * Solve poisson problem for the pressure, using the rhs and p field variables in staggeredGrid
@@ -16,7 +16,7 @@ public:
     void solve() override;
 
 private:
-    void communicateAndBoundariesD();
+    void setBoundariesD();
 
     double LaplaceP(int i, int j) const;
 
