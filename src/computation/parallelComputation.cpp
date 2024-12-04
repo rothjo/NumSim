@@ -165,40 +165,61 @@ void ParallelComputation::applyBoundaryValues() {
     int vJBegin = discretization_->vJBegin();
     int vJEnd = discretization_->vJEnd();
 
-    // define u buffers
-    std::vector<double> uTopBuffer(uIEnd - uIBegin, 0.0);
-    std::vector<double> uBottomBuffer(uIEnd - uIBegin, 0.0);
-    std::vector<double> uRightBuffer(uJEnd - uJBegin, 0.0);
-    std::vector<double> uLeftBuffer(uJEnd - uJBegin, 0.0);
+    // // define u buffers
+    // std::vector<double> uTopBuffer(uIEnd - uIBegin, 0.0);
+    // std::vector<double> uBottomBuffer(uIEnd - uIBegin, 0.0);
+    // std::vector<double> uRightBuffer(uJEnd - uJBegin, 0.0);
+    // std::vector<double> uLeftBuffer(uJEnd - uJBegin, 0.0);
 
-    // define v buffers
-    std::vector<double> vTopBuffer(vIEnd - vIBegin, 0.0);
-    std::vector<double> vBottomBuffer(vIEnd - vIBegin, 0.0);
-    std::vector<double> vRightBuffer(vJEnd - vJBegin, 0.0);
-    std::vector<double> vLeftBuffer(vJEnd - vJBegin, 0.0);
+    // // define v buffers
+    // std::vector<double> vTopBuffer(vIEnd - vIBegin, 0.0);
+    // std::vector<double> vBottomBuffer(vIEnd - vIBegin, 0.0);
+    // std::vector<double> vRightBuffer(vJEnd - vJBegin, 0.0);
+    // std::vector<double> vLeftBuffer(vJEnd - vJBegin, 0.0);
 
+    // define buffers
+    std::vector<double> topBuffer(uIEnd - uIBegin + vIEnd - vIBegin, 0.0);
+    std::vector<double> bottomBuffer(uIEnd - uIBegin + vIEnd - vIBegin, 0.0);
+    std::vector<double> leftBuffer(uJEnd - uJBegin + vJEnd - vJBegin, 0.0);
+    std::vector<double> rightBuffer(uJEnd - uJBegin + vJEnd - vJBegin, 0.0);
+
+
+    // // define requests
+    // MPI_Request requestuTop, requestuBottom, requestuLeft, requestuRight;
+    // MPI_Request requestvTop, requestvBottom, requestvLeft, requestvRight;
 
     // define requests
-    MPI_Request requestuTop, requestuBottom, requestuLeft, requestuRight;
-    MPI_Request requestvTop, requestvBottom, requestvLeft, requestvRight;
+    MPI_Request requestTop, requestBottom, requestLeft, requestRight;
 
     if (partitioning_->ownPartitionContainsTopBoundary()) {
         for (int i = uIBegin; i < uIEnd; i++) {
             discretization_->u(i, uJEnd) = 2 * settings_.dirichletBcTop[0] - discretization_->u(i, uJEnd - 1);
         }
     } else {
+        // for (int i = uIBegin; i < uIEnd; i++) {
+        //     uTopBuffer[i - uIBegin] = discretization_->u(i, uJEnd - 1);
+        // }
+        // partitioning_->send(uTopBuffer, partitioning_->topNeighbourRankNo(), requestuTop);
+
+        // for (int i = vIBegin; i < vIEnd; i++) {
+        //     vTopBuffer[i - vIBegin] = discretization_->v(i, vJEnd - 2);
+        // }
+        // partitioning_->send(vTopBuffer, partitioning_->topNeighbourRankNo(), requestvTop);
+
+        // partitioning_->receive(uTopBuffer, partitioning_->topNeighbourRankNo(), requestuTop);
+        // partitioning_->receive(vTopBuffer, partitioning_->topNeighbourRankNo(), requestvTop);
+
+
         for (int i = uIBegin; i < uIEnd; i++) {
-            uTopBuffer[i - uIBegin] = discretization_->u(i, uJEnd - 1);
+            topBuffer[i - uIBegin] = discretization_->u(i, uJEnd - 1);
         }
-        partitioning_->send(uTopBuffer, partitioning_->topNeighbourRankNo(), requestuTop);
 
         for (int i = vIBegin; i < vIEnd; i++) {
-            vTopBuffer[i - vIBegin] = discretization_->v(i, vJEnd - 2);
+            topBuffer[i - vIBegin + uIEnd - uIBegin] = discretization_->v(i, vJEnd - 2);
         }
-        partitioning_->send(vTopBuffer, partitioning_->topNeighbourRankNo(), requestvTop);
 
-        partitioning_->receive(uTopBuffer, partitioning_->topNeighbourRankNo(), requestuTop);
-        partitioning_->receive(vTopBuffer, partitioning_->topNeighbourRankNo(), requestvTop);
+        partitioning_->send(topBuffer, partitioning_->topNeighbourRankNo(), requestTop);
+        partitioning_->receive(topBuffer, partitioning_->topNeighbourRankNo(), requestTop);
     }
 
     // Communication to bottom neighbour
@@ -207,18 +228,28 @@ void ParallelComputation::applyBoundaryValues() {
             discretization_->u(i, uJBegin - 1) = 2 * settings_.dirichletBcBottom[0] - discretization_->u(i, uJBegin);
         }
     } else {
+        // for (int i = uIBegin; i < uIEnd; i++) {
+        //     uBottomBuffer[i - uIBegin] = discretization_->u(i, uJBegin);
+        // }
+        // partitioning_->send(uBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestuBottom);
+
+        // for (int i = vIBegin; i < vIEnd; i++) {
+        //     vBottomBuffer[i - vIBegin] = discretization_->v(i, vJBegin + 1);
+        // }
+        // partitioning_->send(vBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestvBottom);
+
+        // partitioning_->receive(uBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestuBottom);
+        // partitioning_->receive(vBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestvBottom);
         for (int i = uIBegin; i < uIEnd; i++) {
-            uBottomBuffer[i - uIBegin] = discretization_->u(i, uJBegin);
+            bottomBuffer[i - uIBegin] = discretization_->u(i, uJBegin);
         }
-        partitioning_->send(uBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestuBottom);
 
         for (int i = vIBegin; i < vIEnd; i++) {
-            vBottomBuffer[i - vIBegin] = discretization_->v(i, vJBegin + 1);
+            bottomBuffer[i - vIBegin + uIEnd - uIBegin] = discretization_->v(i, vJBegin + 1);
         }
-        partitioning_->send(vBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestvBottom);
 
-        partitioning_->receive(uBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestuBottom);
-        partitioning_->receive(vBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestvBottom);
+        partitioning_->send(bottomBuffer, partitioning_->bottomNeighbourRankNo(), requestBottom);
+        partitioning_->receive(bottomBuffer, partitioning_->bottomNeighbourRankNo(), requestBottom);
     }
 
     // Communication to left neighbour
@@ -227,18 +258,29 @@ void ParallelComputation::applyBoundaryValues() {
             discretization_->v(vIBegin - 1, j) = 2 * settings_.dirichletBcLeft[1] -  discretization_->v(vIBegin, j);
         }   
     } else {
+        // for (int j = uJBegin; j < uJEnd; j++) {
+        //     uLeftBuffer[j - uJBegin] = discretization_->u(uIBegin + 1, j);
+        // }
+        // partitioning_->send(uLeftBuffer, partitioning_->leftNeighbourRankNo(), requestuLeft);
+
+        // for (int j = vJBegin; j < vJEnd; j++) {
+        //     vLeftBuffer[j - vJBegin] = discretization_->v(vIBegin, j);
+        // }
+        // partitioning_->send(vLeftBuffer, partitioning_->leftNeighbourRankNo(), requestvLeft);
+
+        // partitioning_->receive(uLeftBuffer, partitioning_->leftNeighbourRankNo(), requestuLeft);
+        // partitioning_->receive(vLeftBuffer, partitioning_->leftNeighbourRankNo(), requestvLeft);
+
         for (int j = uJBegin; j < uJEnd; j++) {
-            uLeftBuffer[j - uJBegin] = discretization_->u(uIBegin + 1, j);
+            leftBuffer[j - uJBegin] = discretization_->u(uIBegin + 1, j);
         }
-        partitioning_->send(uLeftBuffer, partitioning_->leftNeighbourRankNo(), requestuLeft);
 
         for (int j = vJBegin; j < vJEnd; j++) {
-            vLeftBuffer[j - vJBegin] = discretization_->v(vIBegin, j);
+            leftBuffer[j - vJBegin + uJEnd - uJBegin] = discretization_->v(vIBegin, j);
         }
-        partitioning_->send(vLeftBuffer, partitioning_->leftNeighbourRankNo(), requestvLeft);
 
-        partitioning_->receive(uLeftBuffer, partitioning_->leftNeighbourRankNo(), requestuLeft);
-        partitioning_->receive(vLeftBuffer, partitioning_->leftNeighbourRankNo(), requestvLeft);
+        partitioning_->send(leftBuffer, partitioning_->leftNeighbourRankNo(), requestLeft);
+        partitioning_->receive(leftBuffer, partitioning_->leftNeighbourRankNo(), requestLeft);
     }
 
     // Communication to right neighbour
@@ -247,63 +289,77 @@ void ParallelComputation::applyBoundaryValues() {
             discretization_->v(vIEnd, j) = 2 * settings_.dirichletBcRight[1] -  discretization_->v(vIEnd - 1, j);
         }
     } else {
+        // for (int j = uJBegin; j < uJEnd; j++) {
+        //     uRightBuffer[j - uJBegin] = discretization_->u(uIEnd - 2, j);
+        // }
+        // partitioning_->send(uRightBuffer, partitioning_->rightNeighbourRankNo(), requestuRight);
+
+        // for (int j = vJBegin; j < vJEnd; j++) {
+        //     vRightBuffer[j - vJBegin] = discretization_->v(vIEnd - 1, j);
+        // }
+        // partitioning_->send(vRightBuffer, partitioning_->rightNeighbourRankNo(), requestvRight);
+
+        // partitioning_->receive(uRightBuffer, partitioning_->rightNeighbourRankNo(), requestuRight);
+        // partitioning_->receive(vRightBuffer, partitioning_->rightNeighbourRankNo(), requestvRight);
         for (int j = uJBegin; j < uJEnd; j++) {
-            uRightBuffer[j - uJBegin] = discretization_->u(uIEnd - 2, j);
+            rightBuffer[j - uJBegin] = discretization_->u(uIEnd - 2, j);
         }
-        partitioning_->send(uRightBuffer, partitioning_->rightNeighbourRankNo(), requestuRight);
 
         for (int j = vJBegin; j < vJEnd; j++) {
-            vRightBuffer[j - vJBegin] = discretization_->v(vIEnd - 1, j);
+            rightBuffer[j - vJBegin + uJEnd - uJBegin] = discretization_->v(vIEnd - 1, j);
         }
-        partitioning_->send(vRightBuffer, partitioning_->rightNeighbourRankNo(), requestvRight);
 
-        partitioning_->receive(uRightBuffer, partitioning_->rightNeighbourRankNo(), requestuRight);
-        partitioning_->receive(vRightBuffer, partitioning_->rightNeighbourRankNo(), requestvRight);
+        partitioning_->send(rightBuffer, partitioning_->rightNeighbourRankNo(), requestRight);
+        partitioning_->receive(rightBuffer, partitioning_->rightNeighbourRankNo(), requestRight);
     }
 
     // Set the received values
     if (!partitioning_->ownPartitionContainsTopBoundary()) {
-        MPI_Wait(&requestvTop, MPI_STATUS_IGNORE);
-        MPI_Wait(&requestuTop, MPI_STATUS_IGNORE);
+        // MPI_Wait(&requestvTop, MPI_STATUS_IGNORE);
+        // MPI_Wait(&requestuTop, MPI_STATUS_IGNORE);
+        MPI_Wait(&requestTop, MPI_STATUS_IGNORE);
         for (int i = uIBegin; i < uIEnd; i++) {
-            discretization_->u(i, uJEnd) = uTopBuffer[i - uIBegin];
+            discretization_->u(i, uJEnd) = topBuffer[i - uIBegin];
         }
         for (int i = vIBegin; i < vIEnd; i++) {
-            discretization_->v(i, vJEnd) = vTopBuffer[i - vIBegin];
+            discretization_->v(i, vJEnd) = topBuffer[i - vIBegin + uIEnd - uIBegin];
         }
     }
 
     if(!partitioning_->ownPartitionContainsBottomBoundary()) {
-        MPI_Wait(&requestvBottom, MPI_STATUS_IGNORE);
-        MPI_Wait(&requestuBottom, MPI_STATUS_IGNORE);
+        // MPI_Wait(&requestvBottom, MPI_STATUS_IGNORE);
+        // MPI_Wait(&requestuBottom, MPI_STATUS_IGNORE);
+        MPI_Wait(&requestBottom, MPI_STATUS_IGNORE);
         for (int i = uIBegin; i < uIEnd; i++) {
-            discretization_->u(i, uJBegin -1) = uBottomBuffer[i - uIBegin];
+            discretization_->u(i, uJBegin -1) = bottomBuffer[i - uIBegin];
         }
         for (int i = vIBegin; i < vIEnd; i++) {
-            discretization_->v(i, vJBegin -1) = vBottomBuffer[i - vIBegin];
+            discretization_->v(i, vJBegin -1) = bottomBuffer[i - vIBegin + uIEnd - uIBegin];
         }
     }
 
     if(!partitioning_->ownPartitionContainsLeftBoundary()) {
-        MPI_Wait(&requestvLeft, MPI_STATUS_IGNORE);
-        MPI_Wait(&requestuLeft, MPI_STATUS_IGNORE);
+        // MPI_Wait(&requestvLeft, MPI_STATUS_IGNORE);
+        // MPI_Wait(&requestuLeft, MPI_STATUS_IGNORE);
+        MPI_Wait(&requestLeft, MPI_STATUS_IGNORE);
         for (int j = uJBegin; j < uJEnd; j++) {
-            discretization_->u(uIBegin-1, j) = uLeftBuffer[j - uJBegin];
+            discretization_->u(uIBegin-1, j) = leftBuffer[j - uJBegin];
         }
         for (int j = vJBegin; j < vJEnd; j++) {
-            discretization_->v(vIBegin-1, j) = vLeftBuffer[j - vJBegin];
+            discretization_->v(vIBegin-1, j) = leftBuffer[j - vJBegin + uJEnd - uJBegin];
         }
     }
 
 
     if(!partitioning_->ownPartitionContainsRightBoundary()) {
-        MPI_Wait(&requestvRight, MPI_STATUS_IGNORE);
-        MPI_Wait(&requestuRight, MPI_STATUS_IGNORE);
+        // MPI_Wait(&requestvRight, MPI_STATUS_IGNORE);
+        // MPI_Wait(&requestuRight, MPI_STATUS_IGNORE);
+        MPI_Wait(&requestRight, MPI_STATUS_IGNORE);
         for (int j = uJBegin; j < uJEnd; j++) {
-            discretization_->u(uIEnd, j) = uRightBuffer[j - uJBegin];
+            discretization_->u(uIEnd, j) = rightBuffer[j - uJBegin];
         }
         for (int j = vJBegin; j < vJEnd; j++) {
-            discretization_->v(vIEnd, j) = vRightBuffer[j - vJBegin];
+            discretization_->v(vIEnd, j) = rightBuffer[j - vJBegin + uJEnd - uJBegin];
         }
     }
 }
