@@ -124,9 +124,9 @@ double Partitioning::globalSum(double localValue) const {
 }
 
 
-double Partitioning::globalMax(double localValue) const {
+double Partitioning::globalMin(double localValue) const {
     double globalValue = 0.0;
-    MPI_Allreduce(&localValue, &globalValue, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&localValue, &globalValue, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
     return globalValue;
 }
 

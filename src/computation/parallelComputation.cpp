@@ -95,13 +95,21 @@ void ParallelComputation::computeTimeStepWidth() {
 
     const double dt_diffusion = (settings_.re / 2.0) * (dx2 * dy2)/(dx2 + dy2);
 
-    double u_max = partitioning_->globalMax(discretization_->u().computeMaxAbs());
-    double v_max = partitioning_->globalMax(discretization_->v().computeMaxAbs());
+    // double u_max = partitioning_->globalMax(discretization_->u().computeMaxAbs());
+    // double v_max = partitioning_->globalMax(discretization_->v().computeMaxAbs());
+
+    
     
     // compute local timesteps
-    const double dt_convection_x = dx / u_max;
-    const double dt_convection_y = dy / v_max;
-    const double dt_convection = std::min(dt_convection_x, dt_convection_y);
+    // const double dt_convection_x = dx / u_max;
+    // const double dt_convection_y = dy / v_max;
+    // const double dt_convection = std::min(dt_convection_x, dt_convection_y);
+
+    const double dt_convection_x = dx / discretization_->u().computeMaxAbs();
+    const double dt_convection_y = dy / discretization_->v().computeMaxAbs();
+    const double dt_convection_local = std::min(dt_convection_x, dt_convection_y);
+
+    double dt_convection = partitioning_->globalMin(dt_convection_local);
 
 
     const double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
