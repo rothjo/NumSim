@@ -36,8 +36,10 @@ void ParallelPressureSolver::communicateAndBoundaries() {
         for (int i = pIBegin; i < pIEnd; i++) {
             topBuffer[i - pIBegin] = discretization_->p(i, pJEnd - 1);
         }
-        partitioning_->send(topBuffer, partitioning_->topNeighbourRankNo(), requestTop);
-        partitioning_->receive(topBuffer, partitioning_->topNeighbourRankNo(), requestTop);
+        // partitioning_->send(topBuffer, partitioning_->topNeighbourRankNo(), requestTop);
+        // partitioning_->receive(topBuffer, partitioning_->topNeighbourRankNo(), requestTop);
+        MPI_Isend(topBuffer.data(), topBuffer.size(), MPI_DOUBLE, partitioning_->topNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestTop);
+        MPI_Irecv(topBuffer.data(), topBuffer.size(), MPI_DOUBLE, partitioning_->topNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestTop);
         // partitioning_->communicate(sendTopBuffer, receiveTopBuffer, partitioning_->topNeighbourRankNo(), requestSendTop, requestReceiveTop);
 
     }
@@ -53,8 +55,10 @@ void ParallelPressureSolver::communicateAndBoundaries() {
             bottomBuffer[i - pIBegin] = discretization_->p(i, pJBegin);
         }
         // partitioning_->communicate(sendBottomBuffer, receiveBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestSendBottom, requestReceiveBottom); 
-        partitioning_->send(bottomBuffer, partitioning_->bottomNeighbourRankNo(), requestBottom);
-        partitioning_->receive(bottomBuffer, partitioning_->bottomNeighbourRankNo(), requestBottom);  
+        // partitioning_->send(bottomBuffer, partitioning_->bottomNeighbourRankNo(), requestBottom);
+        // partitioning_->receive(bottomBuffer, partitioning_->bottomNeighbourRankNo(), requestBottom);  
+        MPI_Isend(bottomBuffer.data(), bottomBuffer.size(), MPI_DOUBLE, partitioning_->bottomNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestBottom);
+        MPI_Irecv(bottomBuffer.data(), bottomBuffer.size(), MPI_DOUBLE, partitioning_->bottomNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestBottom);
     }
 
     if (partitioning_->ownPartitionContainsLeftBoundary()) {
@@ -68,8 +72,10 @@ void ParallelPressureSolver::communicateAndBoundaries() {
             leftBuffer[j - pJBegin] = discretization_->p(pIBegin, j);
         }
         // partitioning_->communicate(sendLeftBuffer, receiveLeftBuffer, partitioning_->leftNeighbourRankNo(), requestSendLeft, requestReceiveLeft);
-        partitioning_->send(leftBuffer, partitioning_->leftNeighbourRankNo(), requestLeft);
-        partitioning_->receive(leftBuffer, partitioning_->leftNeighbourRankNo(), requestLeft); 
+        // partitioning_->send(leftBuffer, partitioning_->leftNeighbourRankNo(), requestLeft);
+        // partitioning_->receive(leftBuffer, partitioning_->leftNeighbourRankNo(), requestLeft); 
+        MPI_Isend(leftBuffer.data(), leftBuffer.size(), MPI_DOUBLE, partitioning_->leftNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestLeft);
+        MPI_Irecv(leftBuffer.data(), leftBuffer.size(), MPI_DOUBLE, partitioning_->leftNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestLeft);
     }
 
     if (partitioning_->ownPartitionContainsRightBoundary()) {
@@ -83,8 +89,10 @@ void ParallelPressureSolver::communicateAndBoundaries() {
             rightBuffer[j - pJBegin] = discretization_->p(pIEnd - 1, j);
         }
         // partitioning_->communicate(sendRightBuffer, receiveRightBuffer, partitioning_->rightNeighbourRankNo(), requestSendRight, requestReceiveRight);
-        partitioning_->send(rightBuffer, partitioning_->rightNeighbourRankNo(), requestRight);
-        partitioning_->receive(rightBuffer, partitioning_->rightNeighbourRankNo(), requestRight);
+        // partitioning_->send(rightBuffer, partitioning_->rightNeighbourRankNo(), requestRight);
+        // partitioning_->receive(rightBuffer, partitioning_->rightNeighbourRankNo(), requestRight);
+        MPI_Isend(rightBuffer.data(), rightBuffer.size(), MPI_DOUBLE, partitioning_->rightNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestRight);
+        MPI_Irecv(rightBuffer.data(), rightBuffer.size(), MPI_DOUBLE, partitioning_->rightNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestRight);
     }
 
     // Set the buffers to the suiting columns/rows

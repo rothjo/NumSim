@@ -4,6 +4,7 @@
 #include "discretization/discretization.h"
 #include "partitioning/partitioning.h"
 #include "pressureSolver.h"
+#include "mpi.h"
 
 
 /**
