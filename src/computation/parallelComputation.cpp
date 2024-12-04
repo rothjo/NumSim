@@ -154,36 +154,46 @@ void ParallelComputation::applyInitalBoundaryValues() {
 //! TODO: Concate u and v for communication
 void ParallelComputation::applyBoundaryValues() {
 
+    // define loop limits
+    int uIBegin = discretization_->uIBegin();
+    int uIEnd = discretization_->uIEnd();
+    int uJBegin = discretization_->uJBegin();
+    int uJEnd = discretization_->uJEnd();
+
+    int vIBegin = discretization_->vIBegin();
+    int vIEnd = discretization_->vIEnd();
+    int vJBegin = discretization_->vJBegin();
+    int vJEnd = discretization_->vJEnd();
+
     // define u buffers
-    std::vector<double> uTopBuffer(discretization_->uIEnd() - discretization_->uIBegin(), 0.0);
-    std::vector<double> uBottomBuffer(discretization_->uIEnd() - discretization_->uIBegin(), 0.0);
-    std::vector<double> uRightBuffer(discretization_->uJEnd() - discretization_->uJBegin(), 0.0);
-    std::vector<double> uLeftBuffer(discretization_->uJEnd() - discretization_->uJBegin(), 0.0);
+    std::vector<double> uTopBuffer(uIEnd - uIBegin, 0.0);
+    std::vector<double> uBottomBuffer(uIEnd - uIBegin, 0.0);
+    std::vector<double> uRightBuffer(uJEnd - uJBegin, 0.0);
+    std::vector<double> uLeftBuffer(uJEnd - uJBegin, 0.0);
 
     // define v buffers
-    std::vector<double> vTopBuffer(discretization_->vIEnd() - discretization_->vIBegin(), 0.0);
-    std::vector<double> vBottomBuffer(discretization_->vIEnd() - discretization_->vIBegin(), 0.0);
-    std::vector<double> vRightBuffer(discretization_->vJEnd() - discretization_->vJBegin(), 0.0);
-    std::vector<double> vLeftBuffer(discretization_->vJEnd() - discretization_->vJBegin(), 0.0);
+    std::vector<double> vTopBuffer(vIEnd - vIBegin, 0.0);
+    std::vector<double> vBottomBuffer(vIEnd - vIBegin, 0.0);
+    std::vector<double> vRightBuffer(vJEnd - vJBegin, 0.0);
+    std::vector<double> vLeftBuffer(vJEnd - vJBegin, 0.0);
 
 
     // define requests
     MPI_Request requestuTop, requestuBottom, requestuLeft, requestuRight;
     MPI_Request requestvTop, requestvBottom, requestvLeft, requestvRight;
 
-    
     if (partitioning_->ownPartitionContainsTopBoundary()) {
-        for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
-            discretization_->u(i, discretization_->uJEnd()) = 2 * settings_.dirichletBcTop[0] - discretization_->u(i, discretization_->uJEnd() - 1);
+        for (int i = uIBegin; i < uIEnd; i++) {
+            discretization_->u(i, uJEnd) = 2 * settings_.dirichletBcTop[0] - discretization_->u(i, uJEnd - 1);
         }
     } else {
-        for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
-            uTopBuffer[i - discretization_->uIBegin()] = discretization_->u(i, discretization_->uJEnd() - 1);
+        for (int i = uIBegin; i < uIEnd; i++) {
+            uTopBuffer[i - uIBegin] = discretization_->u(i, uJEnd - 1);
         }
         partitioning_->send(uTopBuffer, partitioning_->topNeighbourRankNo(), requestuTop);
 
-        for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
-            vTopBuffer[i - discretization_->vIBegin()] = discretization_->v(i, discretization_->vJEnd() - 2);
+        for (int i = vIBegin; i < vIEnd; i++) {
+            vTopBuffer[i - vIBegin] = discretization_->v(i, vJEnd - 2);
         }
         partitioning_->send(vTopBuffer, partitioning_->topNeighbourRankNo(), requestvTop);
 
@@ -193,17 +203,17 @@ void ParallelComputation::applyBoundaryValues() {
 
     // Communication to bottom neighbour
     if (partitioning_->ownPartitionContainsBottomBoundary()){
-        for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
-            discretization_->u(i, discretization_->uJBegin() - 1) = 2 * settings_.dirichletBcBottom[0] - discretization_->u(i, discretization_->uJBegin());
+        for (int i = uIBegin; i < uIEnd; i++) {
+            discretization_->u(i, uJBegin - 1) = 2 * settings_.dirichletBcBottom[0] - discretization_->u(i, uJBegin);
         }
     } else {
-        for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
-            uBottomBuffer[i - discretization_->uIBegin()] = discretization_->u(i, discretization_->uJBegin());
+        for (int i = uIBegin; i < uIEnd; i++) {
+            uBottomBuffer[i - uIBegin] = discretization_->u(i, uJBegin);
         }
         partitioning_->send(uBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestuBottom);
 
-        for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
-            vBottomBuffer[i - discretization_->vIBegin()] = discretization_->v(i, discretization_->vJBegin() + 1);
+        for (int i = vIBegin; i < vIEnd; i++) {
+            vBottomBuffer[i - vIBegin] = discretization_->v(i, vJBegin + 1);
         }
         partitioning_->send(vBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestvBottom);
 
@@ -213,17 +223,17 @@ void ParallelComputation::applyBoundaryValues() {
 
     // Communication to left neighbour
     if (partitioning_->ownPartitionContainsLeftBoundary()){
-        for (int j = (discretization_->vJBegin() - 1); j < (discretization_->vJEnd() + 1); j++) {
-            discretization_->v(discretization_->vIBegin() - 1, j) = 2 * settings_.dirichletBcLeft[1] -  discretization_->v(discretization_->vIBegin(), j);
+        for (int j = (vJBegin - 1); j < (vJEnd + 1); j++) {
+            discretization_->v(vIBegin - 1, j) = 2 * settings_.dirichletBcLeft[1] -  discretization_->v(vIBegin, j);
         }   
     } else {
-        for (int j = discretization_->uJBegin(); j < discretization_->uJEnd(); j++) {
-            uLeftBuffer[j - discretization_->uJBegin()] = discretization_->u(discretization_->uIBegin() + 1, j);
+        for (int j = uJBegin; j < uJEnd; j++) {
+            uLeftBuffer[j - uJBegin] = discretization_->u(uIBegin + 1, j);
         }
         partitioning_->send(uLeftBuffer, partitioning_->leftNeighbourRankNo(), requestuLeft);
 
-        for (int j = discretization_->vJBegin(); j < discretization_->vJEnd(); j++) {
-            vLeftBuffer[j - discretization_->vJBegin()] = discretization_->v(discretization_->vIBegin(), j);
+        for (int j = vJBegin; j < vJEnd; j++) {
+            vLeftBuffer[j - vJBegin] = discretization_->v(vIBegin, j);
         }
         partitioning_->send(vLeftBuffer, partitioning_->leftNeighbourRankNo(), requestvLeft);
 
@@ -233,17 +243,17 @@ void ParallelComputation::applyBoundaryValues() {
 
     // Communication to right neighbour
     if (partitioning_->ownPartitionContainsRightBoundary()){
-        for (int j = (discretization_->vJBegin() - 1); j < (discretization_->vJEnd() + 1); j++) {
-            discretization_->v(discretization_->vIEnd(), j) = 2 * settings_.dirichletBcRight[1] -  discretization_->v(discretization_->vIEnd() - 1, j);
+        for (int j = (vJBegin - 1); j < (vJEnd + 1); j++) {
+            discretization_->v(vIEnd, j) = 2 * settings_.dirichletBcRight[1] -  discretization_->v(vIEnd - 1, j);
         }
     } else {
-        for (int j = discretization_->uJBegin(); j < discretization_->uJEnd(); j++) {
-            uRightBuffer[j - discretization_->uJBegin()] = discretization_->u(discretization_->uIEnd() - 2, j);
+        for (int j = uJBegin; j < uJEnd; j++) {
+            uRightBuffer[j - uJBegin] = discretization_->u(uIEnd - 2, j);
         }
         partitioning_->send(uRightBuffer, partitioning_->rightNeighbourRankNo(), requestuRight);
 
-        for (int j = discretization_->vJBegin(); j < discretization_->vJEnd(); j++) {
-            vRightBuffer[j - discretization_->vJBegin()] = discretization_->v(discretization_->vIEnd() - 1, j);
+        for (int j = vJBegin; j < vJEnd; j++) {
+            vRightBuffer[j - vJBegin] = discretization_->v(vIEnd - 1, j);
         }
         partitioning_->send(vRightBuffer, partitioning_->rightNeighbourRankNo(), requestvRight);
 
@@ -255,33 +265,33 @@ void ParallelComputation::applyBoundaryValues() {
     if (!partitioning_->ownPartitionContainsTopBoundary()) {
         MPI_Wait(&requestvTop, MPI_STATUS_IGNORE);
         MPI_Wait(&requestuTop, MPI_STATUS_IGNORE);
-        for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
-            discretization_->u(i, discretization_->uJEnd()) = uTopBuffer[i - discretization_->uIBegin()];
+        for (int i = uIBegin; i < uIEnd; i++) {
+            discretization_->u(i, uJEnd) = uTopBuffer[i - uIBegin];
         }
-        for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
-            discretization_->v(i, discretization_->vJEnd()) = vTopBuffer[i - discretization_->vIBegin()];
+        for (int i = vIBegin; i < vIEnd; i++) {
+            discretization_->v(i, vJEnd) = vTopBuffer[i - vIBegin];
         }
     }
 
     if(!partitioning_->ownPartitionContainsBottomBoundary()) {
         MPI_Wait(&requestvBottom, MPI_STATUS_IGNORE);
         MPI_Wait(&requestuBottom, MPI_STATUS_IGNORE);
-        for (int i = discretization_->uIBegin(); i < discretization_->uIEnd(); i++) {
-            discretization_->u(i, discretization_->uJBegin() -1) = uBottomBuffer[i - discretization_->uIBegin()];
+        for (int i = uIBegin; i < uIEnd; i++) {
+            discretization_->u(i, uJBegin -1) = uBottomBuffer[i - uIBegin];
         }
-        for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
-            discretization_->v(i, discretization_->vJBegin() -1) = vBottomBuffer[i - discretization_->vIBegin()];
+        for (int i = vIBegin; i < vIEnd; i++) {
+            discretization_->v(i, vJBegin -1) = vBottomBuffer[i - vIBegin];
         }
     }
 
     if(!partitioning_->ownPartitionContainsLeftBoundary()) {
         MPI_Wait(&requestvLeft, MPI_STATUS_IGNORE);
         MPI_Wait(&requestuLeft, MPI_STATUS_IGNORE);
-        for (int j = discretization_->uJBegin(); j < discretization_->uJEnd(); j++) {
-            discretization_->u(discretization_->uIBegin()-1, j) = uLeftBuffer[j - discretization_->uJBegin()];
+        for (int j = uJBegin; j < uJEnd; j++) {
+            discretization_->u(uIBegin-1, j) = uLeftBuffer[j - uJBegin];
         }
-        for (int j = discretization_->vJBegin(); j < discretization_->vJEnd(); j++) {
-            discretization_->v(discretization_->vIBegin()-1, j) = vLeftBuffer[j - discretization_->vJBegin()];
+        for (int j = vJBegin; j < vJEnd; j++) {
+            discretization_->v(vIBegin-1, j) = vLeftBuffer[j - vJBegin];
         }
     }
 
@@ -289,11 +299,11 @@ void ParallelComputation::applyBoundaryValues() {
     if(!partitioning_->ownPartitionContainsRightBoundary()) {
         MPI_Wait(&requestvRight, MPI_STATUS_IGNORE);
         MPI_Wait(&requestuRight, MPI_STATUS_IGNORE);
-        for (int j = discretization_->uJBegin(); j < discretization_->uJEnd(); j++) {
-            discretization_->u(discretization_->uIEnd(), j) = uRightBuffer[j - discretization_->uJBegin()];
+        for (int j = uJBegin; j < uJEnd; j++) {
+            discretization_->u(uIEnd, j) = uRightBuffer[j - uJBegin];
         }
-        for (int j = discretization_->vJBegin(); j < discretization_->vJEnd(); j++) {
-            discretization_->v(discretization_->vIEnd(), j) = vRightBuffer[j - discretization_->vJBegin()];
+        for (int j = vJBegin; j < vJEnd; j++) {
+            discretization_->v(vIEnd, j) = vRightBuffer[j - vJBegin];
         }
     }
 }

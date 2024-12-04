@@ -28,16 +28,20 @@ void ParallelCG::solve() {
     // res_old = res_new
     // communicate d boundaries
 
-    // const double dx2 = discretization_->dx() * discretization_->dx();
-    // const double dy2 = discretization_->dy() * discretization_->dy();
+    // Initialize constants
     const double eps2 = epsilon_ * epsilon_;
     const int N = partitioning_->nCellsGlobal()[0] * partitioning_->nCellsGlobal()[1]; // Number of points used to compute norm
     const double N_eps2 = N * eps2;
 
+    int pIBegin = discretization_->pIBegin();
+    int pIEnd = discretization_->pIEnd();
+    int pJBegin = discretization_->pJBegin();
+    int pJEnd = discretization_->pJEnd();
+
     // Set initial data
     res_old2_ = 0.0;
-    for(int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
-        for(int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
+    for(int i = pIBegin; i < pIEnd; i++) {
+        for(int j = pJBegin; j < pJEnd; j++) {
             double res_ij = discretization_->rhs(i, j) - LaplaceP(i, j);
             r_(i,j) = res_ij;
             res_old2_ += res_ij * res_ij;
@@ -63,8 +67,8 @@ void ParallelCG::solve() {
         dAd_ = 0.0;
         // double laplace_d = 0.0;
         // Compute Ad = A * d
-        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); ++i) {
-            for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); ++j) {
+        for(int i = pIBegin; i < pIEnd; i++) {
+            for(int j = pJBegin; j < pJEnd; j++) {
                 const double laplace_d = LaplaceD(i,j);
                 Ad_(i,j) = laplace_d;
                 dAd_ += d_(i, j) * laplace_d;
@@ -79,8 +83,8 @@ void ParallelCG::solve() {
         res_new2_ = 0.0;
 
         // Update pressure field and residual
-        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); ++i) {
-            for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); ++j) {
+        for(int i = pIBegin; i < pIEnd; i++) {
+            for(int j = pJBegin; j < pJEnd; j++) {
                 discretization_->p(i, j) += alpha * d_(i, j);
                 r_(i, j) -= alpha * Ad_(i, j);
 
@@ -96,8 +100,8 @@ void ParallelCG::solve() {
 
         double beta = res_new2_ / res_old2_;
 
-        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); ++i) {
-            for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); ++j) {
+        for(int i = pIBegin; i < pIEnd; i++) {
+            for(int j = pJBegin; j < pJEnd; j++) {
                 d_(i, j) = r_(i,j) + beta * d_(i, j);
             }
         }
@@ -109,31 +113,32 @@ void ParallelCG::solve() {
 
     communicateAndBoundaries();
 
-    // if(partitioning_->ownRankNo() == 0) {
-    //     std::cout << "Number of iterations: " << numberOfIterations_ << std::endl;
-    //     // std::cout << "ResidualNorm = " << res_new2_ << std::endl;
-    // }
 }
 
 void ParallelCG::communicateAndBoundariesD() {
-    //! TODO: Put into else statements afterwards, optimize sizes of buffers
+    // Initialize buffers and loop limits
     std::vector<double> topBuffer(discretization_->pIEnd() - discretization_->pIBegin(), 0.0);
     std::vector<double> bottomBuffer(discretization_->pIEnd() - discretization_->pIBegin(), 0.0);
     std::vector<double> leftBuffer(discretization_->pJEnd() - discretization_->pJBegin(), 0.0);
     std::vector<double> rightBuffer(discretization_->pJEnd() - discretization_->pJBegin(), 0.0);
 
     MPI_Request requestTop, requestBottom, requestLeft, requestRight;
+
+    int pIBegin = discretization_->pIBegin();
+    int pIEnd = discretization_->pIEnd();
+    int pJBegin = discretization_->pJBegin();
+    int pJEnd = discretization_->pJEnd();
     
     if (partitioning_->ownPartitionContainsTopBoundary()) {
         // Set boundary values
-        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
-            d_(i, discretization_->pJEnd()) = d_(i, discretization_->pJEnd() - 1); 
+        for (int i = pIBegin; i < pIEnd; i++) {
+            d_(i, pJEnd) = d_(i, pJEnd - 1); 
         }
     } else {
         // Send top boundary values to top neighbour
         // Receive top boundary values from top neighbour
-        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
-            topBuffer[i - discretization_->pIBegin()] = d_(i, discretization_->pJEnd() - 1);
+        for (int i = pIBegin; i < pIEnd; i++) {
+            topBuffer[i - pIBegin] = d_(i, pJEnd - 1);
         }
         partitioning_->send(topBuffer, partitioning_->topNeighbourRankNo(), requestTop);
         partitioning_->receive(topBuffer, partitioning_->topNeighbourRankNo(), requestTop);
@@ -142,14 +147,14 @@ void ParallelCG::communicateAndBoundariesD() {
     }
 
     if (partitioning_->ownPartitionContainsBottomBoundary()) {
-        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
-            d_(i, discretization_->pJBegin() - 1) = d_(i, discretization_->pJBegin());
+        for (int i = pIBegin; i < pIEnd; i++) {
+            d_(i, pJBegin - 1) = d_(i, pJBegin);
         }
     } else {
         // Send top boundary values to top neighbour
         // Receive top boundary values from top neighbour
-        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
-            bottomBuffer[i - discretization_->pIBegin()] = d_(i, discretization_->pJBegin());
+        for (int i = pIBegin; i < pIEnd; i++) {
+            bottomBuffer[i - pIBegin] = d_(i, pJBegin);
         }
         // partitioning_->communicate(sendBottomBuffer, receiveBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestSendBottom, requestReceiveBottom); 
         partitioning_->send(bottomBuffer, partitioning_->bottomNeighbourRankNo(), requestBottom);
@@ -157,14 +162,14 @@ void ParallelCG::communicateAndBoundariesD() {
     }
 
     if (partitioning_->ownPartitionContainsLeftBoundary()) {
-        for (int j = discretization_->pJBegin() - 1; j < discretization_->pJEnd() + 1; j++) {
-            d_(discretization_->pIBegin() - 1, j) = d_(discretization_->pIBegin(), j);
+        for (int j = pJBegin - 1; j < pJEnd + 1; j++) {
+            d_(pIBegin - 1, j) = d_(pIBegin, j);
         } 
     } else {
         // Send top boundary values to top neighbour
         // Receive top boundary values from top neighbour
-        for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
-            leftBuffer[j - discretization_->pJBegin()] = d_(discretization_->pIBegin(), j);
+        for (int j = pJBegin; j < pJEnd; j++) {
+            leftBuffer[j - pJBegin] = d_(pIBegin, j);
         }
         // partitioning_->communicate(sendLeftBuffer, receiveLeftBuffer, partitioning_->leftNeighbourRankNo(), requestSendLeft, requestReceiveLeft);
         partitioning_->send(leftBuffer, partitioning_->leftNeighbourRankNo(), requestLeft);
@@ -172,14 +177,14 @@ void ParallelCG::communicateAndBoundariesD() {
     }
 
     if (partitioning_->ownPartitionContainsRightBoundary()) {
-        for (int j = discretization_->pJBegin() - 1; j < discretization_->pJEnd() + 1; j++) {
-            d_(discretization_->pIEnd(), j) = d_(discretization_->pIEnd() - 1, j);
+        for (int j = pJBegin - 1; j < pJEnd + 1; j++) {
+            d_(pIEnd, j) = d_(pIEnd - 1, j);
         }
     } else {
         // Send top boundary values to top neighbour
         // Receive top boundary values from top neighbour
-        for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
-            rightBuffer[j - discretization_->pJBegin()] = d_(discretization_->pIEnd() - 1, j);
+        for (int j = pJBegin; j < pJEnd; j++) {
+            rightBuffer[j - pJBegin] = d_(pIEnd - 1, j);
         }
         // partitioning_->communicate(sendRightBuffer, receiveRightBuffer, partitioning_->rightNeighbourRankNo(), requestSendRight, requestReceiveRight);
         partitioning_->send(rightBuffer, partitioning_->rightNeighbourRankNo(), requestRight);
@@ -189,32 +194,32 @@ void ParallelCG::communicateAndBoundariesD() {
     // Set the buffers to the suiting columns/rows
     if (!partitioning_->ownPartitionContainsTopBoundary()) {
         MPI_Wait(&requestTop, MPI_STATUS_IGNORE);
-        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
-            d_(i, discretization_->pJEnd()) = topBuffer[i - discretization_->pIBegin()];
+        for (int i = pIBegin; i < pIEnd; i++) {
+            d_(i, pJEnd) = topBuffer[i - pIBegin];
         }   
     }
 
     if (!partitioning_->ownPartitionContainsBottomBoundary()) {
         MPI_Wait(&requestBottom, MPI_STATUS_IGNORE);
-        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
-            d_(i, discretization_->pJBegin() - 1) = bottomBuffer[i - discretization_->pIBegin()];
+        for (int i = pIBegin; i < pIEnd; i++) {
+            d_(i, pJBegin - 1) = bottomBuffer[i - pIBegin];
         }
     }
 
     if (!partitioning_->ownPartitionContainsLeftBoundary()) {
         MPI_Wait(&requestLeft, MPI_STATUS_IGNORE);
-        for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
-            d_(discretization_->pIBegin() - 1, j) = leftBuffer[j - discretization_->pJBegin()];
+        for (int j = pJBegin; j < pJEnd; j++) {
+            d_(pIBegin - 1, j) = leftBuffer[j - pJBegin];
         }
     }
 
     if (!partitioning_->ownPartitionContainsRightBoundary()) {
         MPI_Wait(&requestRight, MPI_STATUS_IGNORE);
-        for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
-            d_(discretization_->pIEnd(), j) = rightBuffer[j - discretization_->pJBegin()];
+        for (int j = pJBegin; j < pJEnd; j++) {
+            d_(pIEnd, j) = rightBuffer[j - pJBegin];
         }
     }
-
+    
 }
 
 double ParallelCG::LaplaceP(int i, int j) const {
