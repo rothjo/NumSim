@@ -113,8 +113,10 @@ void ParallelComputation::computeTimeStepWidth() {
     const double dt_convection_y = dy / discretization_->v().computeMaxAbs();
     const double dt_convection_local = std::min(dt_convection_x, dt_convection_y);
 
+    MPI_Request timerequest;
     double dt_convection = 0.0;
-    MPI_Allreduce(&dt_convection_local, &dt_convection, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Iallreduce(&dt_convection_local, &dt_convection, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD, &timerequest);
+    MPI_Wait(&timerequest, MPI_STATUS_IGNORE);
 
 
     const double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
