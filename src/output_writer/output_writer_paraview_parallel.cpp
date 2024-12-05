@@ -15,14 +15,14 @@ OutputWriterParaviewParallel::OutputWriterParaviewParallel(std::shared_ptr<Discr
   nPointsGlobal_ {nCellsGlobal_[0]+1, nCellsGlobal_[1]+1},    // we have one point more than cells in every coordinate direction
   
   // create field variables for resulting values, only for local data as send buffer
-  u_(nPointsGlobal_, std::array<double,2>{0.,0.}, discretization_->meshWidth()),
-  v_(nPointsGlobal_, std::array<double,2>{0.,0.}, discretization_->meshWidth()),
-  p_(nPointsGlobal_, std::array<double,2>{0.,0.}, discretization_->meshWidth()),
+  u_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
+  v_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
+  p_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
   
   // create field variables for resulting values, after MPI communication
-  uGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, discretization_->meshWidth()),
-  vGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, discretization_->meshWidth()),
-  pGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, discretization_->meshWidth())
+  uGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
+  vGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
+  pGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth())
 {
   // Create a vtkWriter_
   vtkWriter_ = vtkSmartPointer<vtkXMLImageDataWriter>::New();
@@ -33,13 +33,13 @@ void OutputWriterParaviewParallel::gatherData()
  // std::array<int,2> size, std::array<double,2> origin, std::array<double,2> meshWidth
 
   int nPointsGlobalTotal = nPointsGlobal_[0] * nPointsGlobal_[1];
-  const double dx = discretization_->meshWidth()[0];
-  const double dy = discretization_->meshWidth()[1];
+  const double dx = (*discretization_).meshWidth()[0];
+  const double dy = (*discretization_).meshWidth()[1];
 
   // set values in own subdomain, other values are left at zero
 
   // determine data range {0,…,iEnd-1} x {0,…,jEnd-1}
-  std::array<int,2> nCells = discretization_->nCells();
+  std::array<int,2> nCells = (*discretization_).nCells();
   int jEnd = nCells[1];
   int iEnd = nCells[0];
 
@@ -68,9 +68,9 @@ void OutputWriterParaviewParallel::gatherData()
       int iGlobal = nodeOffset[0] + i;
       int jGlobal = nodeOffset[1] + j;
 
-      u_(iGlobal,jGlobal) = discretization_->u().interpolateAt(x,y);
-      v_(iGlobal,jGlobal) = discretization_->v().interpolateAt(x,y);
-      p_(iGlobal,jGlobal) = discretization_->p().interpolateAt(x,y);
+      u_(iGlobal,jGlobal) = (*discretization_).u().interpolateAt(x,y);
+      v_(iGlobal,jGlobal) = (*discretization_).v().interpolateAt(x,y);
+      p_(iGlobal,jGlobal) = (*discretization_).p().interpolateAt(x,y);
     }
   }
 
@@ -107,8 +107,8 @@ void OutputWriterParaviewParallel::writeFile(double currentTime)
   dataSet->SetOrigin(0, 0, 0);
 
   // set spacing of mesh
-  const double dx = discretization_->meshWidth()[0];
-  const double dy = discretization_->meshWidth()[1];
+  const double dx = (*discretization_).meshWidth()[0];
+  const double dy = (*discretization_).meshWidth()[1];
   const double dz = 1;
   dataSet->SetSpacing(dx, dy, dz);
 

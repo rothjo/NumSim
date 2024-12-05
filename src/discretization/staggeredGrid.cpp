@@ -19,10 +19,10 @@ StaggeredGrid::StaggeredGrid(std::array<int, 2> nCells, std::array<double, 2> me
       rhs_(FieldVariable({nCells[0] + 3, nCells[1] + 3}, {-1.5 * meshWidth[0], -1.5 * meshWidth[1]}, meshWidth)),
       f_(FieldVariable({nCells[0] + 3, nCells[1] + 3}, {-1.0 * meshWidth[0], -1.5 * meshWidth[1]}, meshWidth)),
       g_(FieldVariable({nCells[0] + 3, nCells[1] + 3}, {-1.5 * meshWidth[0], -1.0 * meshWidth[1]}, meshWidth)) {
-        containsLeftBoundary = partitioning_->ownPartitionContainsLeftBoundary();
-        containsRightBoundary = partitioning_->ownPartitionContainsRightBoundary();
-        containsTopBoundary = partitioning_->ownPartitionContainsTopBoundary();
-        containsBottomBoundary = partitioning_->ownPartitionContainsBottomBoundary();
+        containsLeftBoundary = (*partitioning_).ownPartitionContainsLeftBoundary();
+        containsRightBoundary = (*partitioning_).ownPartitionContainsRightBoundary();
+        containsTopBoundary = (*partitioning_).ownPartitionContainsTopBoundary();
+        containsBottomBoundary = (*partitioning_).ownPartitionContainsBottomBoundary();
 }
 
 const std::array<double,2> StaggeredGrid::meshWidth() const {
