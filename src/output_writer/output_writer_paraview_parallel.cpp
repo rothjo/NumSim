@@ -75,9 +75,12 @@ void OutputWriterParaviewParallel::gatherData()
   }
 
   // sum up values from all ranks, not set values are zero
-  MPI_Reduce(u_.data(), uGlobal_.data(), nPointsGlobalTotal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(v_.data(), vGlobal_.data(), nPointsGlobalTotal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(p_.data(), pGlobal_.data(), nPointsGlobalTotal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Request uRequest, vRequest, pRequest;
+  MPI_Ireduce(u_.data(), uGlobal_.data(), nPointsGlobalTotal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, &uRequest);
+  MPI_Ireduce(v_.data(), vGlobal_.data(), nPointsGlobalTotal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, &vRequest);
+  MPI_Ireduce(p_.data(), pGlobal_.data(), nPointsGlobalTotal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, &pRequest);
+  std::vector<MPI_Request> requests = {uRequest, vRequest, pRequest};
+  MPI_Waitall(3, requests.data(), MPI_STATUSES_IGNORE);
 
 }
 
