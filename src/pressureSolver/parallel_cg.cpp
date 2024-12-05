@@ -116,18 +116,29 @@ void ParallelCG::solve() {
 }
 
 void ParallelCG::communicateAndBoundariesD() {
-    // Initialize buffers and loop limits
-    std::vector<double> topBuffer(discretization_->pIEnd() - discretization_->pIBegin(), 0.0);
-    std::vector<double> bottomBuffer(discretization_->pIEnd() - discretization_->pIBegin(), 0.0);
-    std::vector<double> leftBuffer(discretization_->pJEnd() - discretization_->pJBegin(), 0.0);
-    std::vector<double> rightBuffer(discretization_->pJEnd() - discretization_->pJBegin(), 0.0);
 
-    MPI_Request requestTop, requestBottom, requestLeft, requestRight;
+    // Initialize buffers and loop limits
 
     int pIBegin = discretization_->pIBegin();
     int pIEnd = discretization_->pIEnd();
     int pJBegin = discretization_->pJBegin();
     int pJEnd = discretization_->pJEnd();
+
+    std::vector<double> sendTopBuffer(pIEnd - pIBegin, 0.0);
+    std::vector<double> sendBottomBuffer(pIEnd - pIBegin, 0.0);
+    std::vector<double> sendLeftBuffer(pJEnd - pJBegin, 0.0);
+    std::vector<double> sendRightBuffer(pJEnd - pJBegin, 0.0);
+
+    std::vector<double> recvTopBuffer(pIEnd - pIBegin, 0.0);
+    std::vector<double> recvBottomBuffer(pIEnd - pIBegin, 0.0);
+    std::vector<double> recvLeftBuffer(pJEnd - pJBegin, 0.0);
+    std::vector<double> recvRightBuffer(pJEnd - pJBegin, 0.0);
+
+
+    
+
+    MPI_Request requestTop, requestBottom, requestLeft, requestRight;
+
     
     if (partitioning_->ownPartitionContainsTopBoundary()) {
         // Set boundary values
@@ -138,12 +149,12 @@ void ParallelCG::communicateAndBoundariesD() {
         // Send top boundary values to top neighbour
         // Receive top boundary values from top neighbour
         for (int i = pIBegin; i < pIEnd; i++) {
-            topBuffer[i - pIBegin] = d_(i, pJEnd - 1);
+            sendTopBuffer[i - pIBegin] = d_(i, pJEnd - 1);
         }
         // partitioning_->send(topBuffer, partitioning_->topNeighbourRankNo(), requestTop);
         // partitioning_->receive(topBuffer, partitioning_->topNeighbourRankNo(), requestTop);
-        MPI_Isend(topBuffer.data(), topBuffer.size(), MPI_DOUBLE, partitioning_->topNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestTop);
-        MPI_Irecv(topBuffer.data(), topBuffer.size(), MPI_DOUBLE, partitioning_->topNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestTop);
+        MPI_Isend(sendTopBuffer.data(), sendTopBuffer.size(), MPI_DOUBLE, partitioning_->topNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestTop);
+        MPI_Irecv(recvTopBuffer.data(), recvTopBuffer.size(), MPI_DOUBLE, partitioning_->topNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestTop);
         // partitioning_->communicate(sendTopBuffer, receiveTopBuffer, partitioning_->topNeighbourRankNo(), requestSendTop, requestReceiveTop);
 
     }
@@ -156,13 +167,13 @@ void ParallelCG::communicateAndBoundariesD() {
         // Send top boundary values to top neighbour
         // Receive top boundary values from top neighbour
         for (int i = pIBegin; i < pIEnd; i++) {
-            bottomBuffer[i - pIBegin] = d_(i, pJBegin);
+            sendBottomBuffer[i - pIBegin] = d_(i, pJBegin);
         }
         // partitioning_->communicate(sendBottomBuffer, receiveBottomBuffer, partitioning_->bottomNeighbourRankNo(), requestSendBottom, requestReceiveBottom); 
         // partitioning_->send(bottomBuffer, partitioning_->bottomNeighbourRankNo(), requestBottom);
         // partitioning_->receive(bottomBuffer, partitioning_->bottomNeighbourRankNo(), requestBottom);  
-        MPI_Isend(bottomBuffer.data(), bottomBuffer.size(), MPI_DOUBLE, partitioning_->bottomNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestBottom);
-        MPI_Irecv(bottomBuffer.data(), bottomBuffer.size(), MPI_DOUBLE, partitioning_->bottomNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestBottom);
+        MPI_Isend(sendBottomBuffer.data(), sendBottomBuffer.size(), MPI_DOUBLE, partitioning_->bottomNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestBottom);
+        MPI_Irecv(recvBottomBuffer.data(), recvBottomBuffer.size(), MPI_DOUBLE, partitioning_->bottomNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestBottom);
     }
 
     if (partitioning_->ownPartitionContainsLeftBoundary()) {
@@ -173,13 +184,13 @@ void ParallelCG::communicateAndBoundariesD() {
         // Send top boundary values to top neighbour
         // Receive top boundary values from top neighbour
         for (int j = pJBegin; j < pJEnd; j++) {
-            leftBuffer[j - pJBegin] = d_(pIBegin, j);
+            sendLeftBuffer[j - pJBegin] = d_(pIBegin, j);
         }
         // partitioning_->communicate(sendLeftBuffer, receiveLeftBuffer, partitioning_->leftNeighbourRankNo(), requestSendLeft, requestReceiveLeft);
         // partitioning_->send(leftBuffer, partitioning_->leftNeighbourRankNo(), requestLeft);
         // partitioning_->receive(leftBuffer, partitioning_->leftNeighbourRankNo(), requestLeft); 
-        MPI_Isend(leftBuffer.data(), leftBuffer.size(), MPI_DOUBLE, partitioning_->leftNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestLeft);
-        MPI_Irecv(leftBuffer.data(), leftBuffer.size(), MPI_DOUBLE, partitioning_->leftNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestLeft);
+        MPI_Isend(sendLeftBuffer.data(), sendLeftBuffer.size(), MPI_DOUBLE, partitioning_->leftNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestLeft);
+        MPI_Irecv(recvLeftBuffer.data(), recvLeftBuffer.size(), MPI_DOUBLE, partitioning_->leftNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestLeft);
     }
 
     if (partitioning_->ownPartitionContainsRightBoundary()) {
@@ -190,41 +201,41 @@ void ParallelCG::communicateAndBoundariesD() {
         // Send top boundary values to top neighbour
         // Receive top boundary values from top neighbour
         for (int j = pJBegin; j < pJEnd; j++) {
-            rightBuffer[j - pJBegin] = d_(pIEnd - 1, j);
+            sendRightBuffer[j - pJBegin] = d_(pIEnd - 1, j);
         }
         // partitioning_->communicate(sendRightBuffer, receiveRightBuffer, partitioning_->rightNeighbourRankNo(), requestSendRight, requestReceiveRight);
         // partitioning_->send(rightBuffer, partitioning_->rightNeighbourRankNo(), requestRight);
         // partitioning_->receive(rightBuffer, partitioning_->rightNeighbourRankNo(), requestRight);
-        MPI_Isend(rightBuffer.data(), rightBuffer.size(), MPI_DOUBLE, partitioning_->rightNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestRight);
-        MPI_Irecv(rightBuffer.data(), rightBuffer.size(), MPI_DOUBLE, partitioning_->rightNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestRight);
+        MPI_Isend(sendRightBuffer.data(), sendRightBuffer.size(), MPI_DOUBLE, partitioning_->rightNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestRight);
+        MPI_Irecv(recvRightBuffer.data(), recvRightBuffer.size(), MPI_DOUBLE, partitioning_->rightNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestRight);
     }
 
     // Set the buffers to the suiting columns/rows
     if (!partitioning_->ownPartitionContainsTopBoundary()) {
         MPI_Wait(&requestTop, MPI_STATUS_IGNORE);
         for (int i = pIBegin; i < pIEnd; i++) {
-            d_(i, pJEnd) = topBuffer[i - pIBegin];
+            d_(i, pJEnd) = recvTopBuffer[i - pIBegin];
         }   
     }
 
     if (!partitioning_->ownPartitionContainsBottomBoundary()) {
         MPI_Wait(&requestBottom, MPI_STATUS_IGNORE);
         for (int i = pIBegin; i < pIEnd; i++) {
-            d_(i, pJBegin - 1) = bottomBuffer[i - pIBegin];
+            d_(i, pJBegin - 1) = recvBottomBuffer[i - pIBegin];
         }
     }
 
     if (!partitioning_->ownPartitionContainsLeftBoundary()) {
         MPI_Wait(&requestLeft, MPI_STATUS_IGNORE);
         for (int j = pJBegin; j < pJEnd; j++) {
-            d_(pIBegin - 1, j) = leftBuffer[j - pJBegin];
+            d_(pIBegin - 1, j) = recvLeftBuffer[j - pJBegin];
         }
     }
 
     if (!partitioning_->ownPartitionContainsRightBoundary()) {
         MPI_Wait(&requestRight, MPI_STATUS_IGNORE);
         for (int j = pJBegin; j < pJEnd; j++) {
-            d_(pIEnd, j) = rightBuffer[j - pJBegin];
+            d_(pIEnd, j) = recvRightBuffer[j - pJBegin];
         }
     }
 }
