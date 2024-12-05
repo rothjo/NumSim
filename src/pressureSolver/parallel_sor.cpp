@@ -31,8 +31,8 @@ void ParallelSOR::solve() {
 
     int iteration = 0;
     // applyBoundaryValues(); already set at t = 0
-    computeResidualNorm();
-
+    // computeResidualNorm();
+    residualNorm2_ = 1.0;
     while (residualNorm2_ > eps2 && iteration < maximumNumberOfIterations_) {
         ++iteration;
         
@@ -83,7 +83,10 @@ void ParallelSOR::solve() {
         }  
 
         communicateAndBoundaries();
-        computeResidualNorm(); 
+        if (iteration % 20 == 0) {
+            computeResidualNorm();
+        }
+        // computeResidualNorm(); 
     }
     this->numberOfIterations_ = iteration;
 }
