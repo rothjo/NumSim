@@ -50,8 +50,7 @@ void ParallelCG::solve() {
     }
 
     
-
-    res_old2_ = partitioning_->globalSum(res_old2_);
+    MPI_Allreduce(&res_old2_, &res_old2_, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     
 
 
@@ -75,7 +74,8 @@ void ParallelCG::solve() {
             }
         }
         // std::cout << "before dAd" << dAd_ << std::endl;
-        dAd_ = partitioning_->globalSum(dAd_);
+        // dAd_ = partitioning_->globalSum(dAd_);
+        MPI_Allreduce(&dAd_, &dAd_, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
         // std::cout << "after dAd" << dAd_ << std::endl;
 
         const double alpha = res_old2_ / dAd_;
@@ -91,7 +91,8 @@ void ParallelCG::solve() {
                 res_new2_ += r_(i, j) * r_(i, j);
             }
         }
-        res_new2_ = partitioning_->globalSum(res_new2_);
+        // res_new2_ = partitioning_->globalSum(res_new2_);
+        MPI_Allreduce(&res_new2_, &res_new2_, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     	
         if (res_new2_ < N_eps2) {
             numberOfIterations_ = k;

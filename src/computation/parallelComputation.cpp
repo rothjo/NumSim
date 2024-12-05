@@ -78,9 +78,9 @@ void ParallelComputation::runSimulation() {
 
         // Output
         if (time >= output) {
-            if (partitioning_->ownRankNo() == 0) {
-                std::cout << "Time: " << time << std::endl;
-            }
+            // if (partitioning_->ownRankNo() == 0) {
+            //     std::cout << "Time: " << time << std::endl;
+            // }
             outputWriterParaview_->writeFile(time); // Output
             // outputWriterText_->writeFile(time); // Output
             output++;
@@ -113,7 +113,8 @@ void ParallelComputation::computeTimeStepWidth() {
     const double dt_convection_y = dy / discretization_->v().computeMaxAbs();
     const double dt_convection_local = std::min(dt_convection_x, dt_convection_y);
 
-    double dt_convection = partitioning_->globalMin(dt_convection_local);
+    double dt_convection = 0.0;
+    MPI_Allreduce(&dt_convection_local, &dt_convection, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
 
 
     const double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
