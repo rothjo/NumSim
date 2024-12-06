@@ -64,21 +64,6 @@ public:
   //! get the global sum over all ranks of a local value
   double globalSum(double localValue) const;
 
-  //! get the global minimum over all ranks of a local value
-  double globalMax(double localValue) const;
-
-  //! function to send information
-  void send(std::vector<double> valuesToSend, int neighbourRankNo, MPI_Request &requestSend);
-
-  //! function to receive information
-  void receive(std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_Request &requestReceive);
-
-  //! function to receive and send, full communication
-  void communicate(std::vector<double> valuesToSend, std::vector<double> &valuesToReceive, int neighbourRankNo, MPI_Request &requestSend, MPI_Request &requestReceive);
-
-
-  //! TODO: sendToTop, Bottom, Left, Right
-
 private:
   std::array<int,2> nCellsGlobal_;
   std::array<int,2> nCellsLocal_;

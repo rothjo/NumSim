@@ -15,7 +15,7 @@ class ParallelComputation : public Computation {
 public:
 
     /**
-     * Initialize the computation object, parse the settings from the file that is given as the only command line argument
+     * Initialize the parallel computation object, parse the settings from the file that is given as the only command line argument
      * @param argc number of command line arguments
      * @param argv command line arguments, as given in main
      */
@@ -29,12 +29,12 @@ public:
 protected:
 
     /**
-     * Compute the time step width dt from the CFL-condition
+     * Compute the time step width dt from the CFL-condition including communication
      */
     virtual void computeTimeStepWidth();
 
     /**
-     * Set boundary values of u and v
+     * Set boundary values of u and v or communicate to the neighbouring ranks
      */
     virtual void applyBoundaryValues();
 
@@ -43,16 +43,7 @@ protected:
      */
     virtual void applyInitalBoundaryValues();
 
-    /**
-     * Compute the preliminary velocities F and G and set boundary values
-     */
-    // void computePreliminaryVelocities();
 
-    
-    // virtual void communicatePreliminaryVelocities();
-
-    // set attributes
-    // std::shared_ptr<Partitioning> partitioning_;
     std::unique_ptr<OutputWriterParaviewParallel> outputWriterParaview_;
     std::unique_ptr<OutputWriterTextParallel> outputWriterText_;
 };

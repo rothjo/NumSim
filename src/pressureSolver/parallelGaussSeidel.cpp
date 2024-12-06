@@ -6,18 +6,19 @@ ParallelGaussSeidel::ParallelGaussSeidel(std::shared_ptr<Discretization> discret
     ParallelPressureSolver(discretization, epsilon, maximumNumberOfIterations, partitioning) {}
 
 void ParallelGaussSeidel::solve() {
+    // Set constants
     const double dx2 = discretization_->dx() * discretization_->dx();
     const double dy2 = discretization_->dy() * discretization_->dy();
     const double k = (dx2 * dy2) / (2.0 * (dx2 + dy2));
     const double eps2 = epsilon_ * epsilon_;
 
     int iteration = 0;
-    // applyBoundaryValues(); already set at t = 0
     computeResidualNorm();
 
     while (residualNorm2_ > eps2 && iteration < maximumNumberOfIterations_) {
         ++iteration;
         
+        // Initalize chessboard pattern, assure we start partition with the right pattern
         if (partitioning_->nodeOffsetSum() % 2 == 0) {
 
             // Go through all cells beginning in the bottom left corner
@@ -28,6 +29,7 @@ void ParallelGaussSeidel::solve() {
                     discretization_->p(i, j) = k * (px + py - discretization_->rhs(i, j));
                 }
             }
+
             communicateAndBoundaries();
 
             // Go through all cells beginning one right to the bottom left corner

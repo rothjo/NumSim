@@ -6,8 +6,8 @@
 
 
 /**
- * Implementation of the parallel sor pressure solver.
- * Implements the solve method of the PressureSolver interface.
+ * Implementation of the parallel SOR pressure solver.
+ * Implements the solve method of the ParallelPressureSolver interface.
  */
 class ParallelSOR : public ParallelPressureSolver {
 public:
@@ -16,6 +16,7 @@ public:
 
     /**
      * Solve poisson problem for the pressure, using the rhs and p field variables in staggeredGrid
+     * Applying suitable communication for parallelization
      */
     void solve() override;
 
