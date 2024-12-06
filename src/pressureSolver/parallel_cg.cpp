@@ -25,7 +25,7 @@ void ParallelCG::solve() {
 
     // Initialize first time step
     res_old2_ = 0.0;
-    const double M_ij = 1.0 / (2.0 / dx2_ + 2.0 / dy2_); // Diagonal element approximation, Jacobi
+    const double M_inv = 1.0 / (2.0 / dx2_ + 2.0 / dy2_); // Diagonal element approximation, Jacobi
     // Compute initial residual r and apply preconditioner, i.e. solve Mz_0 = r_0
     for (int i = pIBegin; i < pIEnd; i++) {
         for (int j = pJBegin; j < pJEnd; j++) {
@@ -33,7 +33,7 @@ void ParallelCG::solve() {
             r_(i, j) = res_ij;
 
             // Apply preconditioner (Jacobi: divide by diagonal element)
-            d_(i, j) = res_ij * M_ij;
+            d_(i, j) = res_ij * M_inv;
 
             res_old2_ += r_(i, j) * d_(i, j); // Compute preconditioned residual
         }
@@ -84,7 +84,7 @@ void ParallelCG::solve() {
                 (*discretization_).p(i, j) += alpha * d_(i, j);
                 r_(i, j) -= alpha * Ad_(i, j);
                 // Apply preconditioner to update residual
-                double z_ij = r_(i, j) * M_ij;
+                double z_ij = r_(i, j) * M_inv;
                 res_new2_ += r_(i, j) * z_ij;
                 d_(i, j) = z_ij + (res_new2_ / res_old2_) * d_(i, j);
             }
