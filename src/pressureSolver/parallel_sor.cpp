@@ -30,12 +30,12 @@ void ParallelSOR::solve() {
     const double eps2 = epsilon_ * epsilon_;
 
     int iteration = 0;
-    // applyBoundaryValues(); already set at t = 0
     // computeResidualNorm();
     residualNorm2_ = 1.0;
     while (residualNorm2_ > eps2 && iteration < maximumNumberOfIterations_) {
         ++iteration;
         
+        // Initalize chessboard pattern, assure we start partition with the right pattern
         if (partitioning_->nodeOffsetSum() % 2 == 0) {
 
             // Go through all cells beginning in the bottom left corner
@@ -83,10 +83,10 @@ void ParallelSOR::solve() {
         }  
 
         communicateAndBoundaries();
+        // Compute res only every 20 steps to decrease communication time
         if (iteration % 20 == 0) {
             computeResidualNorm();
         }
-        // computeResidualNorm(); 
     }
     this->numberOfIterations_ = iteration;
 }
