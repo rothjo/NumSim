@@ -16,19 +16,27 @@ public:
     void solve() override;
 
 private:
+    /**
+     * Set boundary values for the search direction d, to be called after avery iteration
+     */
     void setBoundariesD();
 
+    /**
+     * get the discrete laplace operator applied to the pressure field variable at position (i, j)
+     */
     double LaplaceP(int i, int j) const;
 
+    /**
+     * get the discrete laplace operator applied to the search direction field variable at position (i, j)
+     */
     double LaplaceD(int i, int j) const;
 
-    // alpha, beta, res_old, res_new, d, Ad,
     FieldVariable r_;
     FieldVariable d_;
     FieldVariable Ad_;
+
     double res_old2_;
     double res_new2_;
     double dx2_;
     double dy2_; 
-    
 };
