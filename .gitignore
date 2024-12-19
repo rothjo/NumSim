@@ -87,3 +87,8 @@ cmake_install.cmake
 *.txt
 *.vti
 *.Identifier
+
+VTK/
+**/VTK/
+
+*.json
