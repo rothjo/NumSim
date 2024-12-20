@@ -22,13 +22,13 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         0.5;
+endTime         10.0;
 
-deltaT          0.005;
+deltaT          0.0025;
 
 writeControl    timeStep;
 
-writeInterval   20;
+writeInterval   40;
 
 purgeWrite      0;
 
