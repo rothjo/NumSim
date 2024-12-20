@@ -10,12 +10,18 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      transportProperties;
+    object      decomposeParDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// d = 2.0, |U| = 1.0, Re = 1000, nu = d * abs(U) / Re
-nu              [0 2 -1 0 0 0 0] 0.002;
+numberOfSubdomains  9;
+
+method  hierarchical;
+
+coeffs
+{
+    n   (3 3 1);
+}
 
 
 // ************************************************************************* //
