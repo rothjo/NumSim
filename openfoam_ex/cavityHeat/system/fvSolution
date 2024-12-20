@@ -16,35 +16,50 @@ FoamFile
 
 solvers
 {
-    p
+    p_rgh
     {
-        solver          PCG;
-        preconditioner  DIC;
-        tolerance       1e-06;
-        relTol          0.05;
+        solver          GAMG;
+        smoother        DIC;
+        tolerance       1e-8;
+        relTol          0.01;
     }
 
-    pFinal
+    p_rghFinal
     {
-        $p;
+        $p_rgh;
         relTol          0;
     }
 
-    U
+    "(U|T)"
     {
-        solver          smoothSolver;
-        smoother        symGaussSeidel;
-        tolerance       1e-05;
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-8;
+        relTol          0.01;
+    }
+
+    "(U|T)Final"
+    {
+        $T;
         relTol          0;
     }
 }
 
-PISO
+PIMPLE
 {
-    nCorrectors     2;
+    momentumPredictor no;
     nNonOrthogonalCorrectors 0;
-    pRefCell        0;
-    pRefValue       0;
+    nCorrectors       2;
+    pRefCell          0;
+    pRefValue         0;
+}
+
+relaxationFactors
+{
+    equations
+    {
+        ".*"   1.0;
+    }
 }
 
 

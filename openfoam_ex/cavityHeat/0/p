@@ -25,6 +25,11 @@ boundaryField
         type            zeroGradient;
     }
 
+    bottomWall
+    {
+        type            zeroGradient;
+    }
+
     fixedWalls
     {
         type            zeroGradient;

@@ -10,37 +10,24 @@ FoamFile
     version     2.0;
     format      ascii;
     class       volScalarField;
-    object      T;
+    object      alphat;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 0 0 1 0 0 0];
+dimensions      [0 2 -1 0 0 0 0];
 
-internalField   uniform 300;
+internalField   uniform 0;
 
 boundaryField
 {
-    movingWall
+    wall
     {
-        type            fixedValue;
-        value           uniform 304;
+        type            alphatJayatillekeWallFunction;
+        Prt             0.85;
+        value           $internalField;
     }
 
-    bottomWall
-    {
-        type            fixedValue;
-        value           uniform 300;
-    }
-    
-    fixedWalls
-    {
-        type            zeroGradient;
-    }
-
-    frontAndBack
-    {
-        type            empty;
-    }
+    #includeEtc "caseDicts/setConstraintTypes"
 }
 
 

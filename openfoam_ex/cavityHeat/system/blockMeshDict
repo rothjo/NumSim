@@ -47,6 +47,14 @@ boundary
             (3 7 6 2)
         );
     }
+    bottomWall
+    {
+        type wall;
+        faces
+        (
+            (1 5 4 0)
+        );
+    }
     fixedWalls
     {
         type wall;
@@ -54,7 +62,6 @@ boundary
         (
             (0 4 7 3)
             (2 6 5 1)
-            (1 5 4 0)
         );
     }
     frontAndBack

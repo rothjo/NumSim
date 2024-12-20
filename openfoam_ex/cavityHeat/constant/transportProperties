@@ -14,8 +14,21 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// d = 2.0, |U| = 1.0, Re = 1000, nu = d * abs(U) / Re
-nu              0.002;
+transportModel Newtonian;
 
+// d = 2.0, |U| = 1.0, Re = 1000, nu = d * abs(U) / Re
+nu              [0 2 -1 0 0 0 0] 0.002;
+
+beta            [0 0 0 -1 0 0 0] 1e-03;
+
+// Reference temperature
+TRef            300;
+
+// Laminar Prandtl number
+Pr              1.0;
+
+
+// Turbulent Prandtl number
+Prt             1.0;
 
 // ************************************************************************* //

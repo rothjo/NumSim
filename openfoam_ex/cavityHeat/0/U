@@ -26,6 +26,11 @@ boundaryField
         value           uniform (1 0 0);
     }
 
+    bottomWall
+    {
+        type            noSlip;
+    }
+
     fixedWalls
     {
         type            noSlip;
