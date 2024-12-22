@@ -9,39 +9,53 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    object      T;
+    class       dictionary;
+    object      PDRblockMeshDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 0 0 1 0 0 0];
+scale   0.1;
 
-internalField   uniform 300;
-
-boundaryField
+x
 {
+    points  (0 1);
+    nCells  (20);
+    ratios  (1);
+}
+
+y
+{
+    points  (0 1);
+    nCells  (20);
+    ratios  (1);
+}
+
+z
+{
+    points  (0 0.1);
+    nCells  (1);
+    ratios  (1);
+}
+
+
+boundary
+(
     movingWall
     {
-        type            fixedValue;
-        value           uniform 304;
+        type  wall;
+        faces (3);
     }
-
-    bottomWall
-    {
-        type            fixedValue;
-        value           uniform 300;
-    }
-    
     fixedWalls
     {
-        type            zeroGradient;
+        type  wall;
+        faces (0 1 2);
     }
-
     frontAndBack
     {
-        type            empty;
+        type  empty;
+        faces (4 5);
     }
-}
+);
 
 
 // ************************************************************************* //

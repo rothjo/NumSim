@@ -9,34 +9,47 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    object      T;
+    class       volVectorField;
+    object      U;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 0 0 1 0 0 0];
+dimensions      [0 1 -1 0 0 0 0];
 
-internalField   uniform 300;
+internalField   uniform (0 0 0);
 
 boundaryField
 {
-    movingWall
+    inflow
     {
-        type            fixedValue;
-        value           uniform 304;
+        type           codedFixedValue;
+        value          uniform (1.0 0 0);
+
+        name           parabolicVelocity;
+        code 
+        #{
+            const vectorField& Cf = patch().Cf();
+            vectorField& field = *this;
+
+            const scalar Umax = 1.0;
+            forAll(Cf, faceI)
+            {
+                const scalar y = Cf[faceI][1];
+                field[faceI] = vector(Umax*(1-(((y-0.75)/0.25)*((y-0.75)/0.25))),0,0);
+            }
+        #};
     }
 
-    bottomWall
-    {
-        type            fixedValue;
-        value           uniform 300;
-    }
-    
-    fixedWalls
+    outflow
     {
         type            zeroGradient;
     }
 
+    fixedWalls
+    {
+        type            noSlip;
+    }
+    
     frontAndBack
     {
         type            empty;

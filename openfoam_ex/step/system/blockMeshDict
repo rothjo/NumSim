@@ -14,24 +14,38 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-scale   2;
+scale   1;
 
 vertices
 (
-    (0 0 0)
-    (1 0 0)
-    (1 1 0)
+    (0 0.5 0)
+    (0.5 0.5 0)
+    (0.5 0 0)
+    (5 0 0)
+    (5 0.5 0)
+    (5 1 0)
+    (0.5 1 0)
     (0 1 0)
-    (0 0 0.1)
-    (1 0 0.1)
-    (1 1 0.1)
+
+    (0 0.5 0.1)
+    (0.5 0.5 0.1)
+    (0.5 0 0.1)
+    (5 0 0.1)
+    (5 0.5 0.1)
+    (5 1 0.1)
+    (0.5 1 0.1)
     (0 1 0.1)
 );
 
 blocks
 (
-    hex (0 1 2 3 4 5 6 7) (20 20 1) simpleGrading (1 1 1)
+    hex (0 1 6 7 8 9 14 15) (10 10 1) simpleGrading (1 1 1)
+
+    hex (1 4 5 6 9 12 13 14) (100 10 1) simpleGrading (1 1 1)
+
+    hex (2 3 4 1 10 11 12 9) (100 10 1) simpleGrading (1 1 1)
 );
+
 
 edges
 (
@@ -39,20 +53,21 @@ edges
 
 boundary
 (
-    movingWall
+    inflow
     {
-        type wall;
+        type patch;
         faces
         (
-            (3 7 6 2)
+            (0 8 15 7)
         );
     }
-    bottomWall
+    outflow
     {
-        type wall;
+        type patch;
         faces
         (
-            (1 5 4 0)
+            (3 11 12 4)
+            (4 5 13 12)
         );
     }
     fixedWalls
@@ -60,8 +75,11 @@ boundary
         type wall;
         faces
         (
-            (0 4 7 3)
-            (2 6 5 1)
+            (0 8 9 1)
+            (2 10 9 1)
+            (2 10 11 3)
+            (6 14 13 5)
+            (6 7 15 14)
         );
     }
     frontAndBack
@@ -69,8 +87,12 @@ boundary
         type empty;
         faces
         (
-            (0 3 2 1)
-            (4 5 6 7)
+            (0 1 6 7)
+            (1 4 5 6)
+            (2 3 4 1)
+            (9 10 11 12)
+            (9 12 13 14)
+            (8 9 14 15)
         );
     }
 );

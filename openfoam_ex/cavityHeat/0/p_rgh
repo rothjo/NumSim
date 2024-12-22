@@ -10,28 +10,26 @@ FoamFile
     version     2.0;
     format      ascii;
     class       volScalarField;
-    object      T;
+    object      p_rgh;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 0 0 1 0 0 0];
+dimensions      [0 2 -2 0 0 0 0];
 
-internalField   uniform 300;
+internalField   uniform 0;
 
 boundaryField
 {
     movingWall
     {
-        type            fixedValue;
-        value           uniform 304;
+        type            zeroGradient;
     }
 
     bottomWall
     {
-        type            fixedValue;
-        value           uniform 300;
+        type            zeroGradient;
     }
-    
+
     fixedWalls
     {
         type            zeroGradient;

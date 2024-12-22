@@ -45,10 +45,15 @@ boundary
         type  wall;
         faces (3);
     }
+    bottomWall
+    {
+        type  wall;
+        faces (1);
+    }
     fixedWalls
     {
         type  wall;
-        faces (0 1 2);
+        faces (0 2);
     }
     frontAndBack
     {
