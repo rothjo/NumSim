@@ -10,69 +10,18 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      blockMeshDict;
+    object      decomposeParDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-scale   2;
+numberOfSubdomains  9;
 
-vertices
-(
-    (0 0 0)
-    (1 0 0)
-    (1 1 0)
-    (0 1 0)
-    (0 0 0.1)
-    (1 0 0.1)
-    (1 1 0.1)
-    (0 1 0.1)
-);
-n_cells_x 20;
-n_cells_y 20;
-blocks
-(
-    hex (0 1 2 3 4 5 6 7) (#calc $n_cells_x #calc n_cells_y 1) simpleGrading (1 1 1)
+method  hierarchical;
 
-    // hex (0 1 2 3 4 5 6 7) (n_cells_x n_cells_y 1) simpleGrading (1 1 1)
-);
+coeffs
+{
+    n   (3 3 1);
+}
 
-edges
-(
-);
-
-boundary
-(
-    movingWall
-    {
-        type wall;
-        faces
-        (
-            (3 7 6 2)
-        );
-    }
-    fixedWalls
-    {
-        type wall;
-        faces
-        (
-            (0 4 7 3)
-            (2 6 5 1)
-            (1 5 4 0)
-        );
-    }
-    frontAndBack
-    {
-        type empty;
-        faces
-        (
-            (0 3 2 1)
-            (4 5 6 7)
-        );
-    }
-);
-
-mergePatchPairs
-(
-);
 
 // ************************************************************************* //
