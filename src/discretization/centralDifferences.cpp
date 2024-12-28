@@ -37,3 +37,13 @@ double CentralDifferences::computeDuvDy(int i, int j) const {
 
     return (u_top * v_right - u_bottom * v_right_down) / dy();
 }
+
+double CentralDifferences::computeDuTDx(int i, int j) const {
+    std::cout << "Heat works only for Donor Cell!" << std::endl;
+    return 0;
+}
+
+double CentralDifferences::computeDvTDy(int i, int j) const {
+    std::cout << "Heat works only for Donor Cell!" << std::endl;
+    return 0;
+}

@@ -10,14 +10,17 @@ struct Settings
   std::array<int,2> nCells;          //< number of cells in x and y direction
   std::array<double,2> physicalSize; //< physical size of the domain
   double re = 1000;                  //< reynolds number
+  double pr = 1;                      //< prandtl number 
   double endTime = 10.0;             //< end time of the simulation
   double tau = 0.5;                  //< safety factor for time step width
   double maximumDt = 0.1;            //< maximum time step width
 
   std::array<double,2> g{0., 0.};    //< external forces
+  double beta = 1e-3;                //< thermal expansion coefficient
 
   bool useDonorCell = false;         //< if the donor cell scheme schould be used
   double alpha = 0.5;                //< factor for donor-cell scheme
+  double gamma = 0.5;                //< factor for donor-cell scheme (temperature)
 
   std::array<double,2> dirichletBcBottom;  //< prescribed values of u,v at bottom of domain
   std::array<double,2> dirichletBcTop;     //< prescribed values of u,v at top of domain
