@@ -17,8 +17,10 @@ struct Settings
 
   std::array<double,2> g{0., 0.};    //< external forces
   double beta = 1e-3;                //< thermal expansion coefficient
+  double initialTemp = 300;          //< initial temperature
 
   bool useDonorCell = false;         //< if the donor cell scheme schould be used
+  bool computeHeat = false;         //< if heat/temperature schould be computed
   double alpha = 0.5;                //< factor for donor-cell scheme
   double gamma = 0.5;                //< factor for donor-cell scheme (temperature)
 
@@ -26,6 +28,8 @@ struct Settings
   std::array<double,2> dirichletBcTop;     //< prescribed values of u,v at top of domain
   std::array<double,2> dirichletBcLeft;    //< prescribed values of u,v at left of domain
   std::array<double,2> dirichletBcRight;   //< prescribed values of u,v at right of domain
+  double dirichletTopTemp = 300;
+  double dirichletBottomTemp = 310;
 
   std::string pressureSolver = "SOR";      //< which pressure solver to use, "GaussSeidel" or "SOR"
   double omega = 1.0;                //< overrelaxation factor

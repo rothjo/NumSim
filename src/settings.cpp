@@ -106,6 +106,12 @@ void Settings::loadFromFile(std::string filename)
     else if (parameterName == "dirichletRightY"){
       dirichletBcRight[1] = atof(value.c_str());
     }
+    else if (parameterName == "dirichletTopTemp"){
+      dirichletTopTemp = atof(value.c_str());
+    }
+    else if (parameterName == "dirichletBottomTemp"){
+      dirichletBottomTemp = atof(value.c_str());
+    }
     else if (parameterName == "nCellsX"){
       nCells[0] = atoi(value.c_str());
     }
@@ -123,6 +129,17 @@ void Settings::loadFromFile(std::string filename)
         std::cout << "Unknown value for useDonorCell: " << value << std::endl;
       }
     }
+    else if (parameterName == "computeHeat"){
+      if(value == "true"){
+        computeHeat = true;
+      }
+      else if(value == "false"){
+        computeHeat = false;
+      }
+      else{
+        std::cout << "Unknown value for computeHeat: " << value << std::endl;
+      }
+    }
     else if (parameterName == "alpha"){
       alpha = atof(value.c_str());
     }
@@ -130,6 +147,9 @@ void Settings::loadFromFile(std::string filename)
       gamma = atof(value.c_str());
     } 
     else if (parameterName == "beta"){
+      beta = atof(value.c_str());
+    }
+    else if (parameterName == "initialTemp"){
       beta = atof(value.c_str());
     }
     else if (parameterName == "tau"){
