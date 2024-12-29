@@ -43,6 +43,11 @@ protected:
      */
     virtual void applyInitalBoundaryValues();
 
+    /**
+     * set boundary values of T or communicate to the neighbouring ranks
+     */
+    virtual void communicateTemperature();
+
 
     std::unique_ptr<OutputWriterParaviewParallel> outputWriterParaview_;
     std::unique_ptr<OutputWriterTextParallel> outputWriterText_;

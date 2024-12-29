@@ -254,8 +254,7 @@ void Computation::computeVelocities() {
 void Computation::computeTemperature() {
     for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
         for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
-            discretization_->t(i, j) += dt_ * 1/settings_.re * 1/settings_.pr * (discretization_->computeD2TDx2(i, j) + discretization_->computeD2TDy2(i, j));
-            discretization_->t(i, j) -= dt_ * (discretization_->computeDuTDx(i, j) + discretization_->computeDvTDy(i, j));
+            discretization_->t(i, j) = discretization_->t(i, j) + dt_ * (1/settings_.re * 1/settings_.pr * (discretization_->computeD2TDx2(i, j) + discretization_->computeD2TDy2(i, j)) - discretization_->computeDuTDx(i, j) - discretization_->computeDvTDy(i, j));
         }
     }
 }
