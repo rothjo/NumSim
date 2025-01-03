@@ -101,6 +101,31 @@ void OutputWriterTextParallel::writeFile(double currentTime)
   }
   file << std::endl;
 
+
+  // write T
+  // ---------
+  // write header lines
+  file << "T (" << discretization_->p().size()[0] << "x" << discretization_->p().size()[1] << "): " << std::endl 
+    << std::string(fieldWidth, ' ') << "|";
+  for (int i = discretization_->pIBegin()-1; i < discretization_->pIEnd(); i++)
+  {
+    file << std::setw(fieldWidth) << i;
+  }
+  file << std::endl << std::string(fieldWidth*(discretization_->p().size()[0]+2)+1, '-') << std::endl;
+
+  // write p values
+  for (int j = discretization_->pJEnd()-1; j >= discretization_->pJBegin(); j--)
+  {
+    file << std::setw(fieldWidth) << j << "|";
+    for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++)
+    {
+      file << std::setw(fieldWidth) << std::setprecision(fieldWidth-6) << discretization_->t(i,j);
+    }
+    file << std::endl;
+  }
+  file << std::endl;
+
+
   // write f
   // ---------
   // write header lines

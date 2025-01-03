@@ -28,7 +28,7 @@ double Discretization::computeDpDy(int i, int j) const {
 }
 
 double Discretization::computeD2TDx2(int i, int j) const {
-    return (t(i,j+1) - 2.0 * t(i,j) + t(i,j-1)) / (dx() * dx());
+    return (t(i + 1,j) - 2.0 * t(i,j) + t(i-1,j)) / (dx() * dx());
 }
 
 double Discretization::computeD2TDy2(int i, int j) const {

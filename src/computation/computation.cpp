@@ -189,7 +189,7 @@ void Computation::computePreliminaryVelocities() {
             const double f_convection_term = discretization_->computeDu2Dx(i,j) + discretization_->computeDuvDy(i,j);
             discretization_->f(i,j) = discretization_->u(i,j) + dt_*(f_diffusion_term - f_convection_term + settings_.g[0]);
             if (settings_.computeHeat) {
-                discretization_->f(i,j) = discretization_->f(i,j) - dt_ * settings_.beta * settings_.g[0] * (discretization_->t(i,j) + discretization_->t(i+1,j)) / 2.0;
+                discretization_->f(i,j) = discretization_->f(i,j) - dt_ * settings_.beta * settings_.g[0] * ((discretization_->t(i,j) + discretization_->t(i+1,j)) / 2.0 - settings_.initialTemp);
             }
             
         }
@@ -202,7 +202,7 @@ void Computation::computePreliminaryVelocities() {
             const double g_convection_term = discretization_->computeDuvDx(i,j) + discretization_->computeDv2Dy(i,j);
             discretization_->g(i,j) = discretization_->v(i,j) + dt_*(g_diffusion_term - g_convection_term + settings_.g[1]);
             if (settings_.computeHeat) {
-                discretization_->g(i,j) = discretization_->g(i,j) - dt_ * settings_.beta * settings_.g[1] * (discretization_->t(i,j) + discretization_->t(i,j + 1)) / 2.0;
+                discretization_->g(i,j) = discretization_->g(i,j) - dt_ * settings_.beta * settings_.g[1] * ((discretization_->t(i,j) + discretization_->t(i,j + 1)) / 2.0 - settings_.initialTemp);
             }
         }    
     }

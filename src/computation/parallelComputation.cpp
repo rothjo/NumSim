@@ -35,28 +35,27 @@ void ParallelComputation::initialize(int argc, char* argv[]) {
     outputWriterText_ = std::make_unique<OutputWriterTextParallel>(discretization_, *partitioning_);
 
     // init pressure solvers
-    // if (settings_.pressureSolver == "SOR") {
-    //     pressureSolver_ = std::make_unique<ParallelSOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega, partitioning_);
-    // } else if (settings_.pressureSolver == "GaussSeidel") {
-    //     pressureSolver_ = std::make_unique<ParallelGaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
-    // } else if (settings_.pressureSolver == "CG") {
-    //     pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
-    // } else {
-    //     std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
-    //     std::exit(1);
-    // }
+    if (settings_.pressureSolver == "SOR") {
+        pressureSolver_ = std::make_unique<ParallelSOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega, partitioning_);
+    } else if (settings_.pressureSolver == "GaussSeidel") {
+        pressureSolver_ = std::make_unique<ParallelGaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+    } else if (settings_.pressureSolver == "CG") {
+        pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+    } else {
+        std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
+        std::exit(1);
+    }
 
-    // hard coded CG
-    pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+    // // hard coded CG
+    // pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
 }
 
 void ParallelComputation::runSimulation() {
 
     applyInitalBoundaryValues();
-
     double time = 0.0;
     double time_epsilon = 1e-8;
-    int output = 1;
+    double output = 0.0;
     
     // Loop over all time steps until t_end is reached
     while (time < (settings_.endTime - time_epsilon)) {
@@ -96,7 +95,7 @@ void ParallelComputation::runSimulation() {
         if (time >= output) {
             (*outputWriterParaview_).writeFile(time); // Output
             // outputWriterText_->writeFile(time); // Output
-            output++;
+            output = output + 0.1;
         }
         
     }
@@ -124,14 +123,12 @@ void ParallelComputation::computeTimeStepWidth() {
     MPI_Iallreduce(&dt_convection_local, &dt_convection, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD, &timerequest);
     MPI_Wait(&timerequest, MPI_STATUS_IGNORE);
 
-    const double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
+    dt_ = settings_.tau * std::min(dt_diffusion, dt_convection);
     if (settings_.computeHeat) {
-        dt_ = std::min(dt, settings_.tau * dt_diffusion_temp);
-    } else {
-        dt_ = dt;
+        dt_ = std::min(dt_, settings_.tau * dt_diffusion_temp);
     }
 
-    if (dt > settings_.maximumDt) {
+    if (dt_ > settings_.maximumDt) {
         std::cout << "Warning: Time step width is larger than maximum time step width. Using maximum time step width instead." << std::endl;
         dt_ = settings_.maximumDt;
     }
@@ -187,11 +184,6 @@ void ParallelComputation::communicateTemperature() {
     std::vector<double> sendLeftBuffer(pJEnd - pJBegin, 0.0);
     std::vector<double> sendRightBuffer(pJEnd - pJBegin, 0.0);
 
-    // std::vector<double> recvTopBuffer(pIEnd - pIBegin, 0.0);
-    // std::vector<double> recvBottomBuffer(pIEnd - pIBegin, 0.0);
-    // std::vector<double> recvLeftBuffer(pJEnd - pJBegin, 0.0);
-    // std::vector<double> recvRightBuffer(pJEnd - pJBegin, 0.0);
-
 
     
 
@@ -209,27 +201,18 @@ void ParallelComputation::communicateTemperature() {
         for (int i = pIBegin; i < pIEnd; i++) {
             sendTopBuffer[i - pIBegin] = (*discretization_).t(i, pJEnd - 1);
         }
-        // (*partitioning_).send(topBuffer, (*partitioning_).topNeighbourRankNo(), requestTop);
-        // (*partitioning_).receive(topBuffer, (*partitioning_).topNeighbourRankNo(), requestTop);
         MPI_Isend(sendTopBuffer.data(), sendTopBuffer.size(), MPI_DOUBLE, (*partitioning_).topNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestTop);
         MPI_Irecv(sendTopBuffer.data(), sendTopBuffer.size(), MPI_DOUBLE, (*partitioning_).topNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestTop);
-        // (*partitioning_).communicate(sendTopBuffer, receiveTopBuffer, (*partitioning_).topNeighbourRankNo(), requestSendTop, requestReceiveTop);
-
     }
 
     if ((*partitioning_).ownPartitionContainsBottomBoundary()) {
         for (int i = pIBegin; i < pIEnd; i++) {
-            (*discretization_).t(i, pJBegin - 1) = 2*settings_.dirichletBottomTemp - (*discretization_).t(i, pJBegin);
+            (*discretization_).t(i, pJBegin-1) = 2*settings_.dirichletBottomTemp - (*discretization_).t(i, pJBegin);
         }
     } else {
-        // Send top boundary values to top neighbour
-        // Receive top boundary values from top neighbour
         for (int i = pIBegin; i < pIEnd; i++) {
             sendBottomBuffer[i - pIBegin] = (*discretization_).t(i, pJBegin);
-        }
-        // (*partitioning_).communicate(sendBottomBuffer, receiveBottomBuffer, (*partitioning_).bottomNeighbourRankNo(), requestSendBottom, requestReceiveBottom); 
-        // (*partitioning_).send(bottomBuffer, (*partitioning_).bottomNeighbourRankNo(), requestBottom);
-        // (*partitioning_).receive(bottomBuffer, (*partitioning_).bottomNeighbourRankNo(), requestBottom);  
+        }  
         MPI_Isend(sendBottomBuffer.data(), sendBottomBuffer.size(), MPI_DOUBLE, (*partitioning_).bottomNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestBottom);
         MPI_Irecv(sendBottomBuffer.data(), sendBottomBuffer.size(), MPI_DOUBLE, (*partitioning_).bottomNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestBottom);
     }
@@ -239,14 +222,9 @@ void ParallelComputation::communicateTemperature() {
             (*discretization_).t(pIBegin - 1, j) = (*discretization_).t(pIBegin, j);
         } 
     } else {
-        // Send top boundary values to top neighbour
-        // Receive top boundary values from top neighbour
         for (int j = pJBegin; j < pJEnd; j++) {
             sendLeftBuffer[j - pJBegin] = (*discretization_).t(pIBegin, j);
         }
-        // (*partitioning_).communicate(sendLeftBuffer, receiveLeftBuffer, (*partitioning_).leftNeighbourRankNo(), requestSendLeft, requestReceiveLeft);
-        // (*partitioning_).send(leftBuffer, (*partitioning_).leftNeighbourRankNo(), requestLeft);
-        // (*partitioning_).receive(leftBuffer, (*partitioning_).leftNeighbourRankNo(), requestLeft); 
         MPI_Isend(sendLeftBuffer.data(), sendLeftBuffer.size(), MPI_DOUBLE, (*partitioning_).leftNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestLeft);
         MPI_Irecv(sendLeftBuffer.data(), sendLeftBuffer.size(), MPI_DOUBLE, (*partitioning_).leftNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestLeft);
     }
@@ -256,14 +234,9 @@ void ParallelComputation::communicateTemperature() {
             (*discretization_).t(pIEnd, j) = (*discretization_).t(pIEnd - 1, j);
         }
     } else {
-        // Send top boundary values to top neighbour
-        // Receive top boundary values from top neighbour
         for (int j = pJBegin; j < pJEnd; j++) {
             sendRightBuffer[j - pJBegin] = (*discretization_).t(pIEnd - 1, j);
         }
-        // (*partitioning_).communicate(sendRightBuffer, receiveRightBuffer, (*partitioning_).rightNeighbourRankNo(), requestSendRight, requestReceiveRight);
-        // (*partitioning_).send(rightBuffer, (*partitioning_).rightNeighbourRankNo(), requestRight);
-        // (*partitioning_).receive(rightBuffer, (*partitioning_).rightNeighbourRankNo(), requestRight);
         MPI_Isend(sendRightBuffer.data(), sendRightBuffer.size(), MPI_DOUBLE, (*partitioning_).rightNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestRight);
         MPI_Irecv(sendRightBuffer.data(), sendRightBuffer.size(), MPI_DOUBLE, (*partitioning_).rightNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestRight);
     }

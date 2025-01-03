@@ -150,7 +150,7 @@ void Settings::loadFromFile(std::string filename)
       beta = atof(value.c_str());
     }
     else if (parameterName == "initialTemp"){
-      beta = atof(value.c_str());
+      initialTemp = atof(value.c_str());
     }
     else if (parameterName == "tau"){
       tau = atof(value.c_str());
