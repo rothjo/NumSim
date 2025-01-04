@@ -9,7 +9,7 @@ re = 1000             # Reynolds number
 pr = 1                # Prandtl number
 gX = 0.0              # external forces, set to (gX,gY) = (0,-9.81) to account for gravity
 gY = -9.81
-beta = 0.01           # dimensionless heat coeff
+beta = 0.001           # dimensionless heat coeff
 initialTemp = 300     # initial Temperature
 
 # Dirichlet boundary conditions
@@ -26,8 +26,8 @@ dirichletTopTemp = 304
 dirichletBottomTemp = 300
 
 # Discretization parameters
-nCellsX = 20         # number of cells in x and y direction
-nCellsY = 20
+nCellsX = 40         # number of cells in x and y direction
+nCellsY = 40
 useDonorCell = true   # if donor cell discretization should be used, possible values: true false
 computeHeat = true    # if Temperature should be computed, possible values: true false
 alpha = 0.5           # factor for donor-cell scheme, 0 is equivalent to central differences
