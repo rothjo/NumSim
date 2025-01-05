@@ -96,20 +96,6 @@ void Computation::computeTimeStepWidth() {
     const double dt_convection_y = dy / discretization_->v().computeMaxAbs();
     const double dt_convection = std::min(dt_convection_x, dt_convection_y);
 
-    /**
-     * old version from here
-     */
-    // const double dx2 = discretization_->dx() * discretization_->dx();
-    // const double dy2 = discretization_->dy() * discretization_->dy();
-
-    // // Compute CFL condition for diffusion operator
-    // const double dt_diffusion = (settings_.re / 2.0) * (dx2 * dy2)/(dx2 + dy2);
-
-    // // Compute CFL condition for convection operator
-    // const double dt_convection_x = discretization_->dx() / discretization_->u().computeMaxAbs();
-    // const double dt_convection_y = discretization_->dy() / discretization_->v().computeMaxAbs();
-    // const double dt_convection = std::min(dt_convection_x, dt_convection_y);
-
     double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
     if (settings_.computeHeat) {
         dt = std::min(dt, dt_diffusion_temp);

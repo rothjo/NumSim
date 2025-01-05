@@ -39,11 +39,15 @@ double CentralDifferences::computeDuvDy(int i, int j) const {
 }
 
 double CentralDifferences::computeDuTDx(int i, int j) const {
-    std::cout << "Heat works only for Donor Cell!" << std::endl;
-    return 0;
+    const double t_right_sum = (t(i,j) + t(i+1,j)) / 2.0;
+    const double t_left_sum = (t(i-1,j) + t(i,j)) / 2.0;
+    const double cd_term = (u(i,j)*t_right_sum - u(i-1,j)*t_left_sum) / dx();
+    return cd_term;
 }
 
 double CentralDifferences::computeDvTDy(int i, int j) const {
-    std::cout << "Heat works only for Donor Cell!" << std::endl;
-    return 0;
+    const double t_top_sum = (t(i,j) + t(i,j+1)) / 2.0;
+    const double t_bottom_sum = (t(i,j-1) + t(i,j)) / 2.0;
+    const double cd_term = (v(i,j)*t_top_sum - v(i, j-1)*t_bottom_sum) / dy();
+    return cd_term;
 }
