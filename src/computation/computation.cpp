@@ -17,6 +17,15 @@ void Computation::initialize(int argc, char* argv[]) {
         discretization_ = std::make_shared<CentralDifferences>(settings_.nCells, meshWidth_, partitioning_);
     }
 
+    // init temperature field
+    if (settings_.computeHeat) {
+        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
+            for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
+                discretization_->t(i, j) = settings_.initialTemp;
+            }
+        }
+    }
+
     // init output writers
     // outputWriterParaview_ = std::make_unique<OutputWriterParaview>(discretization_);
     // outputWriterText_ = std::make_unique<OutputWriterText>(discretization_);
@@ -43,7 +52,7 @@ void Computation::runSimulation() {
     
     // Loop over all time steps until t_end is reached
     while (time < (settings_.endTime - time_epsilon)) {
-
+        
         applyBoundaryValues();
         
         computeTimeStepWidth();
@@ -53,6 +62,10 @@ void Computation::runSimulation() {
             dt_ = settings_.endTime - time;
         }
         time += dt_;
+
+        if (settings_.computeHeat) {
+            computeTemperature();
+        }
 
         computePreliminaryVelocities();
 
@@ -77,26 +90,16 @@ void Computation::computeTimeStepWidth() {
     const double dy2 = dy * dy;
 
     const double dt_diffusion = (settings_.re / 2.0) * (dx2 * dy2)/(dx2 + dy2);
+    const double dt_diffusion_temp = settings_.pr * dt_diffusion;
 
     const double dt_convection_x = dx / discretization_->u().computeMaxAbs();
     const double dt_convection_y = dy / discretization_->v().computeMaxAbs();
     const double dt_convection = std::min(dt_convection_x, dt_convection_y);
 
-    /**
-     * old version from here
-     */
-    // const double dx2 = discretization_->dx() * discretization_->dx();
-    // const double dy2 = discretization_->dy() * discretization_->dy();
-
-    // // Compute CFL condition for diffusion operator
-    // const double dt_diffusion = (settings_.re / 2.0) * (dx2 * dy2)/(dx2 + dy2);
-
-    // // Compute CFL condition for convection operator
-    // const double dt_convection_x = discretization_->dx() / discretization_->u().computeMaxAbs();
-    // const double dt_convection_y = discretization_->dy() / discretization_->v().computeMaxAbs();
-    // const double dt_convection = std::min(dt_convection_x, dt_convection_y);
-
-    const double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
+    double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
+    if (settings_.computeHeat) {
+        dt = std::min(dt, dt_diffusion_temp);
+    }
 
     if (dt > settings_.maximumDt) {
         std::cout << "Warning: Time step width is larger than maximum time step width. Using maximum time step width instead." << std::endl;
@@ -148,6 +151,20 @@ void Computation::applyBoundaryValues() {
         // right boundary
         discretization_->v(discretization_->vIEnd(), j) = 2 * settings_.dirichletBcRight[1] -  discretization_->v(discretization_->vIEnd() - 1, j);
     }
+
+    if (settings_.computeHeat) {
+        // Dirichlet at top and bottom boundary
+        for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
+            discretization_->t(i, discretization_->pJBegin()-1) = 2*settings_.dirichletBottomTemp - discretization_->t(i, discretization_->pJBegin());
+            discretization_->t(i, discretization_->pJEnd()) = 2*settings_.dirichletTopTemp - discretization_->t(i, discretization_->pJEnd()-1);
+        }
+
+        // Neumann at left and right boundary
+        for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
+            discretization_->t(discretization_->pIBegin()-1, j) = discretization_->t(discretization_->pIBegin(), j);
+            discretization_->t(discretization_->pIEnd(), j) = discretization_->t(discretization_->pIEnd()-1, j);
+        }
+    }
 }
 
 void Computation::computePreliminaryVelocities() {
@@ -157,6 +174,10 @@ void Computation::computePreliminaryVelocities() {
             const double f_diffusion_term = (discretization_->computeD2uDx2(i,j) + discretization_->computeD2uDy2(i,j)) / settings_.re;
             const double f_convection_term = discretization_->computeDu2Dx(i,j) + discretization_->computeDuvDy(i,j);
             discretization_->f(i,j) = discretization_->u(i,j) + dt_*(f_diffusion_term - f_convection_term + settings_.g[0]);
+            if (settings_.computeHeat) {
+                discretization_->f(i,j) = discretization_->f(i,j) - dt_ * settings_.beta * settings_.g[0] * ((discretization_->t(i,j) + discretization_->t(i+1,j)) / 2.0 - settings_.initialTemp);
+            }
+            
         }
     }
 
@@ -166,8 +187,11 @@ void Computation::computePreliminaryVelocities() {
             const double g_diffusion_term = (discretization_->computeD2vDx2(i,j) + discretization_->computeD2vDy2(i,j)) / settings_.re;
             const double g_convection_term = discretization_->computeDuvDx(i,j) + discretization_->computeDv2Dy(i,j);
             discretization_->g(i,j) = discretization_->v(i,j) + dt_*(g_diffusion_term - g_convection_term + settings_.g[1]);
-        }
-    }    
+            if (settings_.computeHeat) {
+                discretization_->g(i,j) = discretization_->g(i,j) - dt_ * settings_.beta * settings_.g[1] * ((discretization_->t(i,j) + discretization_->t(i,j + 1)) / 2.0 - settings_.initialTemp);
+            }
+        }    
+    }
 }
 
 void Computation::applyPreliminaryBoundaryValues() {
@@ -209,6 +233,14 @@ void Computation::computeVelocities() {
     for (int i = discretization_->vIBegin(); i < discretization_->vIEnd(); i++) {
         for (int j = discretization_->vJBegin(); j < discretization_->vJEnd(); j++) {
             discretization_->v(i, j) = discretization_->g(i, j) - dt_ * discretization_->computeDpDy(i, j);
+        }
+    }
+}
+
+void Computation::computeTemperature() {
+    for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
+        for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
+            discretization_->t(i, j) = discretization_->t(i, j) + dt_ * (1/settings_.re * 1/settings_.pr * (discretization_->computeD2TDx2(i, j) + discretization_->computeD2TDy2(i, j)) - discretization_->computeDuTDx(i, j) - discretization_->computeDvTDy(i, j));
         }
     }
 }

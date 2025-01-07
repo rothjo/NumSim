@@ -57,3 +57,30 @@ double DonorCell::computeDuvDy(int i, int j) const {
 
     return cd_term + alpha_ * donor_term;
 }
+
+
+double DonorCell::computeDuTDx(int i, int j) const {
+    const double t_right_sum = (t(i,j) + t(i+1,j)) / 2.0;
+    const double t_left_sum = (t(i-1,j) + t(i,j)) / 2.0;
+    const double t_right_diff = (t(i,j) - t(i+1,j)) / 2.0;
+    const double t_left_diff = (t(i-1,j) - t(i,j)) / 2.0;
+
+    const double cd_term = (u(i,j)*t_right_sum - u(i-1,j)*t_left_sum) / dx();
+    const double donor_term = (std::fabs(u(i,j)) * t_right_diff - std::fabs(u(i-1,j)) * t_left_diff) / dx();
+
+    return cd_term + gamma_ * donor_term;
+}
+
+double DonorCell::computeDvTDy(int i, int j) const {
+    const double t_top_sum = (t(i,j) + t(i,j+1)) / 2.0;
+    const double t_bottom_sum = (t(i,j-1) + t(i,j)) / 2.0;
+    const double t_top_diff = (t(i,j) - t(i,j+1)) / 2.0;
+    const double t_bottom_diff = (t(i,j-1) - t(i,j)) / 2.0;
+
+    const double cd_term = (v(i,j)*t_top_sum - v(i, j-1)*t_bottom_sum) / dy();
+    const double donor_term = (std::fabs(v(i,j)) * t_top_diff - std::fabs(v(i, j-1)) * t_bottom_diff) / dy();
+
+    return cd_term + gamma_ * donor_term;
+}
+
+

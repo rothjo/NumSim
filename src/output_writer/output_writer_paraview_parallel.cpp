@@ -18,11 +18,13 @@ OutputWriterParaviewParallel::OutputWriterParaviewParallel(std::shared_ptr<Discr
   u_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
   v_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
   p_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
+  t_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
   
   // create field variables for resulting values, after MPI communication
   uGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
   vGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
-  pGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth())
+  pGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth()),
+  tGlobal_(nPointsGlobal_, std::array<double,2>{0.,0.}, (*discretization_).meshWidth())
 {
   // Create a vtkWriter_
   vtkWriter_ = vtkSmartPointer<vtkXMLImageDataWriter>::New();
@@ -56,6 +58,7 @@ void OutputWriterParaviewParallel::gatherData()
   u_.setToZero();
   v_.setToZero();
   p_.setToZero();
+  t_.setToZero();
 
   for (int j = 0; j < jEnd; j++)
   {
@@ -71,16 +74,18 @@ void OutputWriterParaviewParallel::gatherData()
       u_(iGlobal,jGlobal) = (*discretization_).u().interpolateAt(x,y);
       v_(iGlobal,jGlobal) = (*discretization_).v().interpolateAt(x,y);
       p_(iGlobal,jGlobal) = (*discretization_).p().interpolateAt(x,y);
+      t_(iGlobal,jGlobal) = (*discretization_).t().interpolateAt(x,y);
     }
   }
 
   // sum up values from all ranks, not set values are zero
-  MPI_Request uRequest, vRequest, pRequest;
+  MPI_Request uRequest, vRequest, pRequest, tRequest;
   MPI_Ireduce(u_.data(), uGlobal_.data(), nPointsGlobalTotal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, &uRequest);
   MPI_Ireduce(v_.data(), vGlobal_.data(), nPointsGlobalTotal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, &vRequest);
   MPI_Ireduce(p_.data(), pGlobal_.data(), nPointsGlobalTotal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, &pRequest);
-  std::vector<MPI_Request> requests = {uRequest, vRequest, pRequest};
-  MPI_Waitall(3, requests.data(), MPI_STATUSES_IGNORE);
+  MPI_Ireduce(t_.data(), tGlobal_.data(), nPointsGlobalTotal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, &tRequest);
+  std::vector<MPI_Request> requests = {uRequest, vRequest, pRequest, tRequest};
+  MPI_Waitall(4, requests.data(), MPI_STATUSES_IGNORE);
 
 }
 
@@ -148,6 +153,36 @@ void OutputWriterParaviewParallel::writeFile(double currentTime)
 
   // add the field variable to the data set
   dataSet->GetPointData()->AddArray(arrayPressure);
+
+  // add temperature field variable
+  // ---------------------------
+
+  vtkSmartPointer<vtkDoubleArray> arrayTemperature = vtkDoubleArray::New();
+
+  // the temperature is a scalar which means the number of components is 1
+  arrayTemperature->SetNumberOfComponents(1);
+
+  // Set the number of temperature values and allocate memory for it. We already know the number, it has to be the same as there are nodes in the mesh.
+  arrayTemperature->SetNumberOfTuples(dataSet->GetNumberOfPoints());
+
+  arrayTemperature->SetName("temperature");
+
+  // loop over the nodes of the mesh and assign the interpolated t values in the vtk data structure
+  // we only consider the cells that are the actual computational domain, not the helper values in the "halo"
+
+  index = 0;   // index for the vtk data structure
+  for (int j = 0; j < nCellsGlobal_[1]+1; j++)
+  {
+    for (int i = 0; i < nCellsGlobal_[0]+1; i++, index++)
+    {
+      arrayTemperature->SetValue(index, tGlobal_(i,j));
+    }
+  }
+  // now, we should have added as many values as there are points in the vtk data structure
+  assert(index == dataSet->GetNumberOfPoints());
+
+  // add the field variable to the data set
+  dataSet->GetPointData()->AddArray(arrayTemperature);
   
   // add velocity field variable
   // ---------------------------

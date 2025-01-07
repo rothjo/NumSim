@@ -73,6 +73,9 @@ void Settings::loadFromFile(std::string filename)
     else if (parameterName == "re"){
       re = atof(value.c_str());
     }
+    else if (parameterName == "pr"){
+      pr = atof(value.c_str());
+    }
     else if (parameterName == "gX"){
       g[0] = atof(value.c_str());
     }
@@ -103,6 +106,12 @@ void Settings::loadFromFile(std::string filename)
     else if (parameterName == "dirichletRightY"){
       dirichletBcRight[1] = atof(value.c_str());
     }
+    else if (parameterName == "dirichletTopTemp"){
+      dirichletTopTemp = atof(value.c_str());
+    }
+    else if (parameterName == "dirichletBottomTemp"){
+      dirichletBottomTemp = atof(value.c_str());
+    }
     else if (parameterName == "nCellsX"){
       nCells[0] = atoi(value.c_str());
     }
@@ -120,8 +129,28 @@ void Settings::loadFromFile(std::string filename)
         std::cout << "Unknown value for useDonorCell: " << value << std::endl;
       }
     }
+    else if (parameterName == "computeHeat"){
+      if(value == "true"){
+        computeHeat = true;
+      }
+      else if(value == "false"){
+        computeHeat = false;
+      }
+      else{
+        std::cout << "Unknown value for computeHeat: " << value << std::endl;
+      }
+    }
     else if (parameterName == "alpha"){
       alpha = atof(value.c_str());
+    }
+    else if (parameterName == "gamma"){
+      gamma = atof(value.c_str());
+    } 
+    else if (parameterName == "beta"){
+      beta = atof(value.c_str());
+    }
+    else if (parameterName == "initialTemp"){
+      initialTemp = atof(value.c_str());
     }
     else if (parameterName == "tau"){
       tau = atof(value.c_str());
@@ -156,11 +185,11 @@ void Settings::printSettings()
 {
   std::cout << "Settings: " << std::endl
     << "  physicalSize: " << physicalSize[0] << " x " << physicalSize[1] << ", nCells: " << nCells[0] << " x " << nCells[1] << std::endl
-    << "  endTime: " << endTime << " s, re: " << re << ", g: (" << g[0] << "," << g[1] << "), tau: " << tau << ", maximum dt: " << maximumDt << std::endl
+    << "  endTime: " << endTime << " s, re: " << re << ", pr: " << pr << ", g: (" << g[0] << "," << g[1] << "), tau: " << tau << ", beta: " << beta << ", maximum dt: " << maximumDt << std::endl
     << "  dirichletBC: bottom: (" << dirichletBcBottom[0] << "," << dirichletBcBottom[1]  << ")"
     << ", top: ("  << dirichletBcTop[0] << "," << dirichletBcTop[1]  << ")"
     << ", left: ("  << dirichletBcLeft[0] << "," << dirichletBcLeft[1] << ")"
     << ", right: ("  << dirichletBcRight[0] << "," << dirichletBcRight[1] << ")" << std::endl
-    << "  useDonorCell: " << std::boolalpha << useDonorCell << ", alpha: " << alpha << std::endl
+    << "  useDonorCell: " << std::boolalpha << useDonorCell << ", alpha: " << alpha << ", gamma: " << gamma << std::endl
     << "  pressureSolver: " << pressureSolver << ", omega: " << omega << ", epsilon: " << epsilon << ", maximumNumberOfIterations: " << maximumNumberOfIterations << std::endl;
 }

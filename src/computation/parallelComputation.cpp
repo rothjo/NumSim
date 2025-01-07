@@ -21,38 +21,50 @@ void ParallelComputation::initialize(int argc, char* argv[]) {
         discretization_ = std::make_shared<CentralDifferences>(localCells, meshWidth_, partitioning_);
     }
 
+    // init temperature field
+    if (settings_.computeHeat) {
+        for (int i = discretization_->pIBegin()-1; i < discretization_->pIEnd()+1; i++) {
+            for (int j = discretization_->pJBegin()-1; j < discretization_->pJEnd()+1; j++) {
+                discretization_->t(i, j) = settings_.initialTemp;
+            }
+        }
+    }
+
     // init output writers
     outputWriterParaview_ = std::make_unique<OutputWriterParaviewParallel>(discretization_, *partitioning_);
     outputWriterText_ = std::make_unique<OutputWriterTextParallel>(discretization_, *partitioning_);
 
     // init pressure solvers
-    // if (settings_.pressureSolver == "SOR") {
-    //     pressureSolver_ = std::make_unique<ParallelSOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega, partitioning_);
-    // } else if (settings_.pressureSolver == "GaussSeidel") {
-    //     pressureSolver_ = std::make_unique<ParallelGaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
-    // } else if (settings_.pressureSolver == "CG") {
-    //     pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
-    // } else {
-    //     std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
-    //     std::exit(1);
-    // }
+    if (settings_.pressureSolver == "SOR") {
+        pressureSolver_ = std::make_unique<ParallelSOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega, partitioning_);
+    } else if (settings_.pressureSolver == "GaussSeidel") {
+        pressureSolver_ = std::make_unique<ParallelGaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+    } else if (settings_.pressureSolver == "CG") {
+        pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+    } else {
+        std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
+        std::exit(1);
+    }
 
-    // hard coded CG
-    pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+    // // hard coded CG
+    // pressureSolver_ = std::make_unique<ParallelCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
 }
 
 void ParallelComputation::runSimulation() {
 
     applyInitalBoundaryValues();
-
     double time = 0.0;
     double time_epsilon = 1e-8;
-    int output = 1;
+    double output = 0.0;
     
     // Loop over all time steps until t_end is reached
     while (time < (settings_.endTime - time_epsilon)) {
 
         applyBoundaryValues();
+
+        if (settings_.computeHeat) {
+            communicateTemperature();
+        }
 
 
         computeTimeStepWidth();
@@ -64,6 +76,9 @@ void ParallelComputation::runSimulation() {
         }
         time += dt_;
 
+        if (settings_.computeHeat) {
+            computeTemperature();
+        }
     	
         computePreliminaryVelocities();
     
@@ -80,7 +95,7 @@ void ParallelComputation::runSimulation() {
         if (time >= output) {
             (*outputWriterParaview_).writeFile(time); // Output
             // outputWriterText_->writeFile(time); // Output
-            output++;
+            output = output + 0.1;
         }
         
     }
@@ -94,6 +109,8 @@ void ParallelComputation::computeTimeStepWidth() {
     const double dy2 = dy * dy;
 
     const double dt_diffusion = (settings_.re / 2.0) * (dx2 * dy2)/(dx2 + dy2);
+    const double dt_diffusion_temp = settings_.pr * dt_diffusion;
+
 
     const double dt_convection_x = dx / (*discretization_).u().computeMaxAbs();
     const double dt_convection_y = dy / (*discretization_).v().computeMaxAbs();
@@ -106,13 +123,14 @@ void ParallelComputation::computeTimeStepWidth() {
     MPI_Iallreduce(&dt_convection_local, &dt_convection, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD, &timerequest);
     MPI_Wait(&timerequest, MPI_STATUS_IGNORE);
 
-    const double dt = settings_.tau * std::min(dt_diffusion, dt_convection);
+    dt_ = settings_.tau * std::min(dt_diffusion, dt_convection);
+    if (settings_.computeHeat) {
+        dt_ = std::min(dt_, settings_.tau * dt_diffusion_temp);
+    }
 
-    if (dt > settings_.maximumDt) {
+    if (dt_ > settings_.maximumDt) {
         std::cout << "Warning: Time step width is larger than maximum time step width. Using maximum time step width instead." << std::endl;
         dt_ = settings_.maximumDt;
-    } else {
-        dt_ = dt;
     }
 }
 
@@ -150,6 +168,108 @@ void ParallelComputation::applyInitalBoundaryValues() {
             (*discretization_).g(i, (*discretization_).vJBegin() - 1) = settings_.dirichletBcBottom[1];
         }
     }
+}
+
+void ParallelComputation::communicateTemperature() {
+
+    // Initialize buffers and loop limits
+
+    int pIBegin = (*discretization_).pIBegin();
+    int pIEnd = (*discretization_).pIEnd();
+    int pJBegin = (*discretization_).pJBegin();
+    int pJEnd = (*discretization_).pJEnd();
+
+    std::vector<double> sendTopBuffer(pIEnd - pIBegin, 0.0);
+    std::vector<double> sendBottomBuffer(pIEnd - pIBegin, 0.0);
+    std::vector<double> sendLeftBuffer(pJEnd - pJBegin, 0.0);
+    std::vector<double> sendRightBuffer(pJEnd - pJBegin, 0.0);
+
+
+    
+
+    MPI_Request requestTop, requestBottom, requestLeft, requestRight;
+
+    
+    if ((*partitioning_).ownPartitionContainsTopBoundary()) {
+        // Set boundary values
+        for (int i = pIBegin; i < pIEnd; i++) {
+            (*discretization_).t(i, pJEnd) = 2*settings_.dirichletTopTemp - (*discretization_).t(i, pJEnd - 1); 
+        }
+    } else {
+        // Send top boundary values to top neighbour
+        // Receive top boundary values from top neighbour
+        for (int i = pIBegin; i < pIEnd; i++) {
+            sendTopBuffer[i - pIBegin] = (*discretization_).t(i, pJEnd - 1);
+        }
+        MPI_Isend(sendTopBuffer.data(), sendTopBuffer.size(), MPI_DOUBLE, (*partitioning_).topNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestTop);
+        MPI_Irecv(sendTopBuffer.data(), sendTopBuffer.size(), MPI_DOUBLE, (*partitioning_).topNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestTop);
+    }
+
+    if ((*partitioning_).ownPartitionContainsBottomBoundary()) {
+        for (int i = pIBegin; i < pIEnd; i++) {
+            (*discretization_).t(i, pJBegin-1) = 2*settings_.dirichletBottomTemp - (*discretization_).t(i, pJBegin);
+        }
+    } else {
+        for (int i = pIBegin; i < pIEnd; i++) {
+            sendBottomBuffer[i - pIBegin] = (*discretization_).t(i, pJBegin);
+        }  
+        MPI_Isend(sendBottomBuffer.data(), sendBottomBuffer.size(), MPI_DOUBLE, (*partitioning_).bottomNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestBottom);
+        MPI_Irecv(sendBottomBuffer.data(), sendBottomBuffer.size(), MPI_DOUBLE, (*partitioning_).bottomNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestBottom);
+    }
+
+    if ((*partitioning_).ownPartitionContainsLeftBoundary()) {
+        for (int j = pJBegin - 1; j < pJEnd + 1; j++) {
+            (*discretization_).t(pIBegin - 1, j) = (*discretization_).t(pIBegin, j);
+        } 
+    } else {
+        for (int j = pJBegin; j < pJEnd; j++) {
+            sendLeftBuffer[j - pJBegin] = (*discretization_).t(pIBegin, j);
+        }
+        MPI_Isend(sendLeftBuffer.data(), sendLeftBuffer.size(), MPI_DOUBLE, (*partitioning_).leftNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestLeft);
+        MPI_Irecv(sendLeftBuffer.data(), sendLeftBuffer.size(), MPI_DOUBLE, (*partitioning_).leftNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestLeft);
+    }
+
+    if ((*partitioning_).ownPartitionContainsRightBoundary()) {
+        for (int j = pJBegin - 1; j < pJEnd + 1; j++) {
+            (*discretization_).t(pIEnd, j) = (*discretization_).t(pIEnd - 1, j);
+        }
+    } else {
+        for (int j = pJBegin; j < pJEnd; j++) {
+            sendRightBuffer[j - pJBegin] = (*discretization_).t(pIEnd - 1, j);
+        }
+        MPI_Isend(sendRightBuffer.data(), sendRightBuffer.size(), MPI_DOUBLE, (*partitioning_).rightNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestRight);
+        MPI_Irecv(sendRightBuffer.data(), sendRightBuffer.size(), MPI_DOUBLE, (*partitioning_).rightNeighbourRankNo(), 0, MPI_COMM_WORLD, &requestRight);
+    }
+
+    // Set the buffers to the suiting columns/rows
+    if (!(*partitioning_).ownPartitionContainsTopBoundary()) {
+        MPI_Wait(&requestTop, MPI_STATUS_IGNORE);
+        for (int i = pIBegin; i < pIEnd; i++) {
+            (*discretization_).t(i, pJEnd) = sendTopBuffer[i - pIBegin];
+        }   
+    }
+
+    if (!(*partitioning_).ownPartitionContainsBottomBoundary()) {
+        MPI_Wait(&requestBottom, MPI_STATUS_IGNORE);
+        for (int i = pIBegin; i < pIEnd; i++) {
+            (*discretization_).t(i, pJBegin - 1) = sendBottomBuffer[i - pIBegin];
+        }
+    }
+
+    if (!(*partitioning_).ownPartitionContainsLeftBoundary()) {
+        MPI_Wait(&requestLeft, MPI_STATUS_IGNORE);
+        for (int j = pJBegin; j < pJEnd; j++) {
+            (*discretization_).t(pIBegin - 1, j) = sendLeftBuffer[j - pJBegin];
+        }
+    }
+
+    if (!(*partitioning_).ownPartitionContainsRightBoundary()) {
+        MPI_Wait(&requestRight, MPI_STATUS_IGNORE);
+        for (int j = pJBegin; j < pJEnd; j++) {
+            (*discretization_).t(pIEnd, j) = sendRightBuffer[j - pJBegin];
+        }
+    }
+
 }
 
 void ParallelComputation::applyBoundaryValues() {

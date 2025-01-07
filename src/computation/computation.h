@@ -82,6 +82,11 @@ protected:
      */
     void computeVelocities();
 
+    /**
+     * Compute the new temperature T
+     */
+    void computeTemperature();
+
     // set attributes
     Settings settings_;
     std::shared_ptr<Discretization> discretization_;
