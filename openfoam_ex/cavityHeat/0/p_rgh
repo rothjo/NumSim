@@ -20,24 +20,11 @@ internalField   uniform 0;
 
 boundaryField
 {
-    movingWall
+    wall
     {
-        type            zeroGradient;
-    }
-
-    bottomWall
-    {
-        type            zeroGradient;
-    }
-
-    fixedWalls
-    {
-        type            zeroGradient;
-    }
-
-    frontAndBack
-    {
-        type            empty;
+        type            fixedFluxPressure;
+        rho             rhok;
+        value           &internalField;
     }
 }
 
