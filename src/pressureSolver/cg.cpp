@@ -107,9 +107,7 @@ void CG::setBoundariesD() {
 
 }
 
-double CG::LaplaceP(int i, int j) const {
-    return ((discretization_->p(i + 1, j) - 2.0 * discretization_->p(i, j) + discretization_->p(i - 1, j)) / dx2_) + ((discretization_->p(i, j + 1) - 2.0 * discretization_->p(i, j) + discretization_->p(i, j - 1)) / dy2_);
-}
+
 
 double CG::LaplaceD(int i, int j) const {
     return ((d_(i + 1, j) - 2.0 * d_(i, j) + d_(i - 1, j)) / dx2_) + ((d_(i, j + 1) - 2.0 * d_(i, j) + d_(i, j - 1)) / dy2_);

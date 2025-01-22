@@ -33,6 +33,12 @@ protected:
      */
     double residualNorm();
 
+
+    /**
+     * Compute the Laplacian of the pressure field variable
+     */
+    double laplaceP(int i, int j) const;
+
     std::shared_ptr<Discretization> discretization_;
     double epsilon_;
     int maximumNumberOfIterations_;

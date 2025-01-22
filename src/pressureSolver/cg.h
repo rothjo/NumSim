@@ -22,11 +22,6 @@ private:
     void setBoundariesD();
 
     /**
-     * get the discrete laplace operator applied to the pressure field variable at position (i, j)
-     */
-    double LaplaceP(int i, int j) const;
-
-    /**
      * get the discrete laplace operator applied to the search direction field variable at position (i, j)
      */
     double LaplaceD(int i, int j) const;
