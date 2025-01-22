@@ -18,12 +18,16 @@ void CG::solve() {
 
     // Set initial data
     res_old2_ = 0.0;
+    const double M_inv = 1.0 / (2.0 / dx2_ + 2.0 / dy2_); // Diagonal element approximation, Jacobi
     for(int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
         for(int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
             double res_ij = discretization_->rhs(i, j) - LaplaceP(i, j);
-            r_(i,j) = res_ij;
-            res_old2_ += res_ij * res_ij;
-            d_(i, j) = res_ij;
+            r_(i, j) = res_ij;
+
+            // Apply preconditioner (Jacobi: divide by diagonal element)
+            d_(i, j) = res_ij * M_inv;
+
+            res_old2_ += r_(i, j) * d_(i, j); // Compute preconditioned residual
         }
     }
 
@@ -56,9 +60,12 @@ void CG::solve() {
         for (int i = discretization_->pIBegin(); i < discretization_->pIEnd(); ++i) {
             for (int j = discretization_->pJBegin(); j < discretization_->pJEnd(); ++j) {
                 discretization_->p(i, j) += alpha * d_(i, j);
+                (*discretization_).p(i, j) += alpha * d_(i, j);
                 r_(i, j) -= alpha * Ad_(i, j);
-
-                res_new2_ += r_(i, j) * r_(i, j);
+                // Apply preconditioner to update residual
+                double z_ij = r_(i, j) * M_inv;
+                res_new2_ += r_(i, j) * z_ij;
+                d_(i, j) = z_ij + (res_new2_ / res_old2_) * d_(i, j);
             }
         }
     	
