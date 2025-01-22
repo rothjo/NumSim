@@ -1,4 +1,4 @@
-#include "output_writer/write_paraview_output.h"
+#include "output_writer_serial/write_paraview_output.h"
 
 #include <vtkSmartPointer.h>
 #include <vtkImageData.h>
