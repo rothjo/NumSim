@@ -36,7 +36,7 @@ void Computation::initialize(int argc, char* argv[]) {
     } else if (settings_.pressureSolver == "GaussSeidel") {
         pressureSolver_ = std::make_unique<GaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
     } else if (settings_.pressureSolver == "CG") {
-        pressureSolver_ = std::make_unique<CG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+        pressureSolver_ = std::make_unique<CG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
     } else if(settings_.pressureSolver == "Multigrid") {
         pressureSolver_ = std::make_unique<Multigrid>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
     }
