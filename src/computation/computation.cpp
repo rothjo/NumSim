@@ -36,7 +36,7 @@ void Computation::initialize(int argc, char* argv[]) {
     } else if (settings_.pressureSolver == "GaussSeidel") {
         pressureSolver_ = std::make_unique<GaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
     } else if (settings_.pressureSolver == "CG") {
-        pressureSolver_ = std::make_unique<CG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
+        pressureSolver_ = std::make_unique<Multigrid>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
     } else {
         std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
         std::exit(1);
@@ -74,6 +74,10 @@ void Computation::runSimulation() {
         computeRightHandSide();
 
         computePressure();
+
+        if (settings_.pressureSolver == "CG") {
+            computeRightHandSide();
+        }
 
         computeVelocities();
 
