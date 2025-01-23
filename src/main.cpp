@@ -21,17 +21,20 @@
 
 int main(int argc, char *argv[])
 {
-  // sleep(15);
-  // Computation comp;
-  // comp.initialize(argc, argv);
-  // comp.runSimulation();
-
+  // serial program
   MPI_Init(&argc, &argv);
-  // MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
-  ParallelComputation parallelcomp;
-  parallelcomp.initialize(argc, argv);
-  parallelcomp.runSimulation();
+  Computation comp;
+  comp.initialize(argc, argv);
+  comp.runSimulation();
   MPI_Finalize();
+
+  // parallel program
+  // MPI_Init(&argc, &argv);
+  // // MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+  // ParallelComputation parallelcomp;
+  // parallelcomp.initialize(argc, argv);
+  // parallelcomp.runSimulation();
+  // MPI_Finalize();
 
   return EXIT_SUCCESS;
 }
