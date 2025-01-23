@@ -21,7 +21,7 @@ void CG::solve() {
     const double M_inv = 1.0 / (2.0 / dx2_ + 2.0 / dy2_); // Diagonal element approximation, Jacobi
     for(int i = discretization_->pIBegin(); i < discretization_->pIEnd(); i++) {
         for(int j = discretization_->pJBegin(); j < discretization_->pJEnd(); j++) {
-            double res_ij = discretization_->rhs(i, j) - LaplaceP(i, j);
+            double res_ij = discretization_->rhs(i, j) - laplaceP(i, j);
             r_(i, j) = res_ij;
 
             // Apply preconditioner (Jacobi: divide by diagonal element)
