@@ -30,6 +30,8 @@ void Computation::initialize(int argc, char* argv[]) {
     outputWriterParaview_ = std::make_unique<OutputWriterParaview>(discretization_, *partitioning_);
     outputWriterText_ = std::make_unique<OutputWriterText>(discretization_, *partitioning_);
 
+    cg_ = std::make_unique<CG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
+
     // init pressure solvers
     if (settings_.pressureSolver == "SOR") {
         pressureSolver_ = std::make_unique<SOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega);
@@ -52,6 +54,7 @@ void Computation::runSimulation() {
     double time = 0.0;
     int t_iter = 0;
     double time_epsilon = 1e-8;
+    double output = 0.0;
     
     // Loop over all time steps until t_end is reached
     while (time < (settings_.endTime - time_epsilon)) {
@@ -81,11 +84,20 @@ void Computation::runSimulation() {
         if (settings_.pressureSolver == "Multigrid") {
             computeRightHandSide();
         }
+        
+        cg_->solve();
 
         computeVelocities();
 
         // outputWriterParaview_->writeFile(time); // Output
-        outputWriterText_->writeFile(time); // Output
+        // outputWriterText_->writeFile(time); // Output
+
+        // Output
+        // if (time >= output) {
+        //     // (*outputWriterParaview_).writeFile(time); // Output
+        //     outputWriterText_->writeFile(time); // Output
+        //     output = output + 0.1;
+        // }
     }
 }
 

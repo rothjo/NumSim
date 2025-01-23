@@ -8,6 +8,7 @@ Multigrid::Multigrid(std::shared_ptr<Discretization> baseDiscretization, double 
     : PressureSolver(baseDiscretization, epsilon, maximumNumberOfIterations),
       epsilon_(epsilon), maxIterations_(maximumNumberOfIterations),
       partitioning_(partitioning),
+      baseRHS_(FieldVariable({baseDiscretization->nCells()[0] + 3, baseDiscretization->nCells()[1] + 3}, {-1.5 * baseDiscretization->meshWidth()[0], -1.5 * baseDiscretization->meshWidth()[1]}, baseDiscretization->meshWidth())),
       full_solver(std::make_shared<CG>(baseDiscretization, epsilon, maximumNumberOfIterations)),
       levels_(std::log2(baseDiscretization->nCells()[0])) {
     assert((baseDiscretization->nCells()[0] == baseDiscretization->nCells()[1] && baseDiscretization->nCells()[0] > 0 &&  (baseDiscretization->nCells()[0] & (baseDiscretization->nCells()[0] - 1)) == 0) &&
@@ -19,23 +20,24 @@ Multigrid::Multigrid(std::shared_ptr<Discretization> baseDiscretization, double 
         grids_.push_back(coarsenGrid(l-1));
     }
 
-    // Create a smoother for each grid level
-    for (const auto& grid : grids_) {
-        smoothers_.emplace_back(std::make_shared<CG>(grid, epsilon, 2));
-        // errors_.emplace_back(FieldVariable({grid->nCells()[0] + 3, grid->nCells()[1] + 3}, {-1.5 * grid->dx(), -1.5 * grid->dy()}, grid->meshWidth()));
-    }
     for (size_t l = 0; l < grids_.size() - 1; ++l) { // Exclude the last grid
         // const auto& grid = grids_[l];
-        smoothers_.emplace_back(std::make_shared<CG>(grids_[l], epsilon, 2));
+        smoothers_.emplace_back(std::make_shared<GaussSeidel>(grids_[l], epsilon, 2));
     }
-    smoothers_.emplace_back(std::make_shared<CG>(grids_[grids_.size() - 1], epsilon, maxIterations_));
+    smoothers_.emplace_back(std::make_shared<GaussSeidel>(grids_[grids_.size() - 1], epsilon, 2));
 
+    // for (int i = discretization_->pIBegin(); discretization_->pIEnd(); ++i) {
+    //     for (int j = discretization_->pJBegin(); discretization_->pJEnd(); ++j) {
+
+    //         baseRHS_(i, j) = discretization_->rhs(i, j);
+    //     }
+    // }
 }
 
 // Solve method
 void Multigrid::solve() {
     // Perform a multigrid V-cycle
-    computeResidual(0);
+    // computeResidual(0);
 
     // Go down the V-Cycle: Restrict residuals to coarser grids
     for (int l = 0; l < levels_ - 1; ++l) {
@@ -43,7 +45,6 @@ void Multigrid::solve() {
         computeResidual(l);
         restrictToCoarserGrid(l);
     }
-
 
     // Solve on the coarsest grid
     smoothers_[levels_ - 1]->solve();
@@ -55,7 +56,14 @@ void Multigrid::solve() {
 
     }
 
-    full_solver->solve();
+    // for (int i = discretization_->pIBegin(); discretization_->pIEnd(); ++i) {
+    //     for (int j = discretization_->pJBegin(); discretization_->pJEnd(); ++j) {
+    //         std::cout << "i = " << i << ", j = " << j << std::endl;
+    //         discretization_->rhs(i, j) = baseRHS_(i, j);
+    //     }
+    // }
+
+    // full_solver->solve();
 
     // std::cout << "Multigrid reached maximum iterations without convergence.\n";
 }
@@ -73,7 +81,10 @@ std::shared_ptr<Discretization> Multigrid::coarsenGrid(int fineLevel) {
 void Multigrid::computeResidual(int level) {
     for (int i = grids_[level]->pIBegin(); i < grids_[level]->pIEnd(); ++i) {
         for (int j = grids_[level]->pJBegin(); j < grids_[level]->pJEnd(); ++j) {
-            grids_[level]->rhs(i, j) = grids_[level]->rhs(i, j) - laplaceP(i, j);
+            const double dx_2 = grids_[level]->dx() * grids_[level]->dx();
+            const double dy_2 = grids_[level]->dy() * grids_[level]->dy();
+            double laplaceP = ((grids_[level]->p(i + 1, j) - 2.0 * grids_[level]->p(i, j) + grids_[level]->p(i - 1, j)) / dx_2) + ((grids_[level]->p(i, j + 1) - 2.0 * grids_[level]->p(i, j) + grids_[level]->p(i, j - 1)) / dy_2);
+            grids_[level]->rhs(i, j) = grids_[level]->rhs(i, j) - laplaceP;
         }
     }
 }
@@ -107,6 +118,7 @@ void Multigrid::prolongAndCorrectToFinerGrid(int coarseLevel) {
         }
     }
 }
+
 
 // Apply correction
 // void Multigrid::applyCorrection(int level) {

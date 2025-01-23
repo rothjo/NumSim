@@ -79,7 +79,7 @@ void CG::solve() {
         // Check if new residuum is lower than tolerance
         if (res_new2_ < N_eps2) {
             numberOfIterations_ = k;
-            std::cout << "Converged after " << k << " iterations." << std::endl;
+            // std::cout << "Converged after " << k << " iterations." << std::endl;
             break;
         }
 

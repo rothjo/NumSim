@@ -22,11 +22,17 @@
 int main(int argc, char *argv[])
 {
   // serial program
+  // measure time
+
+  double start = MPI_Wtime();
   MPI_Init(&argc, &argv);
   Computation comp;
   comp.initialize(argc, argv);
   comp.runSimulation();
   MPI_Finalize();
+  double end = MPI_Wtime();
+  std::cout << "Time: " << end - start << std::endl;
+  
 
   // parallel program
   // MPI_Init(&argc, &argv);

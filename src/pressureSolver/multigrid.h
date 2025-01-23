@@ -1,5 +1,7 @@
 #include "pressureSolver.h"
 #include "cg.h"
+#include "gaussSeidel.h"
+#include "sor.h"
 #include "discretization/donorCell.h"
 #include "partitioning/partitioning.h"
 #include <memory>
@@ -31,7 +33,7 @@ private:
     int maxIterations_; ///< Maximum number of iterations for V-cycles.
 
     std::vector<std::shared_ptr<Discretization>> grids_; ///< Hierarchy of grids (finest to coarsest).
-    std::vector<std::shared_ptr<CG>> smoothers_; ///< Smoothers for each level.
+    std::vector<std::shared_ptr<PressureSolver>> smoothers_; ///< Smoothers for each level.
     // std::vector<FieldVariable> errors_; ///< Error grid for each level.
 
     /**
@@ -69,6 +71,7 @@ private:
      */
     // void applyCorrection(int level);
 
-    std::shared_ptr<CG> full_solver;
+    std::shared_ptr<PressureSolver> full_solver;
     std::shared_ptr<Partitioning> partitioning_;
+    FieldVariable baseRHS_;
 };
