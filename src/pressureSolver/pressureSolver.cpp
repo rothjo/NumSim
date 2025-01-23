@@ -44,3 +44,9 @@ void PressureSolver::computeResidualNorm() {
 double PressureSolver::residualNorm() {
     return residualNorm2_;
 }
+
+double PressureSolver::laplaceP(int i, int j) const {
+    const double dx_2 = discretization_->dx() * discretization_->dx();
+    const double dy_2 = discretization_->dy() * discretization_->dy();
+    return ((discretization_->p(i + 1, j) - 2.0 * discretization_->p(i, j) + discretization_->p(i - 1, j)) / dx_2) + ((discretization_->p(i, j + 1) - 2.0 * discretization_->p(i, j) + discretization_->p(i, j - 1)) / dy_2);
+}
