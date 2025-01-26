@@ -24,14 +24,8 @@ MGPCG::MGPCG(std::shared_ptr<Discretization> baseDiscretization, double epsilon,
         // const auto& grid = grids_[l];
         smoothers_.emplace_back(std::make_shared<GaussSeidel>(grids_[l], epsilon, 2));
     }
-    smoothers_.emplace_back(std::make_shared<GaussSeidel>(grids_[grids_.size() - 1], epsilon, 100));
+    smoothers_.emplace_back(std::make_shared<GaussSeidel>(grids_[grids_.size() - 1], epsilon, 4));
 
-    // for (int i = discretization_->pIBegin(); discretization_->pIEnd(); ++i) {
-    //     for (int j = discretization_->pJBegin(); discretization_->pJEnd(); ++j) {
-
-    //         baseRHS_(i, j) = discretization_->rhs(i, j);
-    //     }
-    // }
 }
 
 // Solve method
@@ -56,7 +50,7 @@ void MGPCG::solve() {
         for (int j = pJBegin; j < pJEnd; j++) {
             double res_ij = discretization_->rhs(i, j) - laplaceP(i, j);
             r_(i, j) = res_ij;
-            // discretization_->rhs(i, j) = r_(i, j);
+            discretization_->rhs(i, j) = r_(i, j);
             res_old2_ += r_(i, j) * r_(i, j); 
 
         }
@@ -64,10 +58,9 @@ void MGPCG::solve() {
     // std::cout << discretization_->rhs(6, 5) << std::endl;
 
     // Perform a multigrid V-cycle
-    std::cout << discretization_->rhs(5,5) << std::endl;
+    // std::cout << discretization_->rhs(5,5) << std::endl;
     vCycle();
 
-    std::cout << discretization_->rhs(5,5) << std::endl;
     // for (int i = pIBegin; i < pIEnd; i++) {
     //     for (int j = pJBegin; j < pJEnd; j++) {
     //         z_(i,j) = M_inv * r_(i,j);
@@ -93,7 +86,7 @@ void MGPCG::solve() {
     setBoundariesD();
 
     // std::cout << res_old2_ << std::endl;
-    std::cout << res_old2_ << std::endl;
+    // std::cout << res_old2_ << std::endl;
     if (res_old2_ < N_eps2) {
         return;
     }
@@ -125,7 +118,7 @@ void MGPCG::solve() {
             for (int j = pJBegin; j < pJEnd; j++) {
                 (*discretization_).p(i, j) += alpha * d_(i, j);
                 r_(i, j) -= alpha * Ad_(i, j);
-                // (*discretization_).rhs(i, j) = r_(i, j);
+                (*discretization_).rhs(i, j) = r_(i, j);
                 res_new2_ += r_(i, j) * r_(i, j);
             }
         }
@@ -200,7 +193,7 @@ void MGPCG::vCycle() {
         for (int j = grids_[0]->pJBegin(); j < grids_[0]->pJEnd(); ++j) {
             baseRHS_(i, j) = discretization_->rhs(i, j);
             baseP_(i, j) = discretization_->p(i, j);
-            grids_[0]->p(i, j) = 0.0;
+            discretization_->p(i, j) = 0.0;
         }
     }
 
@@ -226,7 +219,7 @@ void MGPCG::vCycle() {
     for (int i = grids_[0]->pIBegin(); i < grids_[0]->pIEnd(); ++i) {
         for (int j = grids_[0]->pJBegin(); j < grids_[0]->pJEnd(); ++j) {
             // std::cout << discretization_->p(i, j) << std::endl;
-            z_(i, j) = grids_[0]->p(i, j);
+            z_(i, j) = discretization_->p(i, j);
             discretization_->rhs(i, j) = baseRHS_(i, j);
             discretization_->p(i, j) = baseP_(i, j);
         }
