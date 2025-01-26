@@ -15,7 +15,7 @@ public:
      */
     void solve() override;
 
-private:
+protected:
     /**
      * Set boundary values for the search direction d, to be called after avery iteration
      */

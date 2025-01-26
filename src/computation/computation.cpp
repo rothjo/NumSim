@@ -40,7 +40,7 @@ void Computation::initialize(int argc, char* argv[]) {
     } else if (settings_.pressureSolver == "CG") {
         pressureSolver_ = std::make_unique<CG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
     } else if(settings_.pressureSolver == "Multigrid") {
-        pressureSolver_ = std::make_unique<Multigrid>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
+        pressureSolver_ = std::make_unique<MGPCG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
     }
     else {
         std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
@@ -81,16 +81,16 @@ void Computation::runSimulation() {
 
         computePressure();
 
-        if (settings_.pressureSolver == "Multigrid") {
-            computeRightHandSide();
-        }
+        // if (settings_.pressureSolver == "Multigrid") {
+        //     computeRightHandSide();
+        // }
         
-        cg_->solve();
+        // cg_->solve();
 
         computeVelocities();
 
         // outputWriterParaview_->writeFile(time); // Output
-        // outputWriterText_->writeFile(time); // Output
+        outputWriterText_->writeFile(time); // Output
 
         // Output
         // if (time >= output) {

@@ -8,6 +8,7 @@
 #include "pressureSolver/sor.h"
 #include "pressureSolver/cg.h"
 #include "pressureSolver/multigrid.h"
+#include "pressureSolver/mgpcg.h"
 #include "output_writer/output_writer.h"
 #include "output_writer/output_writer_paraview.h"
 #include "output_writer/output_writer_text.h"
