@@ -27,6 +27,8 @@ public:
 
   void* data();
 
+  Array2D& operator=(const Array2D& other);
+
 protected:
 
   std::vector<double> data_;  //< storage array values, in row-major order

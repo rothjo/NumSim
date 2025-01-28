@@ -1,5 +1,6 @@
 #include "array2d.h"
 
+#include <stdexcept>
 #include <cassert>
 
 Array2D::Array2D(std::array<int,2> size) :
@@ -45,4 +46,17 @@ void Array2D::setToZero() {
 
 void* Array2D::data() {
   return data_.data();
+}
+
+Array2D& Array2D::operator=(const Array2D& other) {
+    // Check if the sizes match
+    if (size_ != other.size_) {
+        throw std::runtime_error("Cannot assign Array2D objects of different sizes.");
+    }
+
+    // Copy the data
+    data_ = other.data_;
+
+    // Return a reference to this
+    return *this;
 }

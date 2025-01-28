@@ -81,11 +81,11 @@ void Computation::runSimulation() {
 
         computePressure();
 
-        if (settings_.pressureSolver == "Multigrid") {
-            computeRightHandSide();
-        }
+        // if (settings_.pressureSolver == "Multigrid") {
+        //     computeRightHandSide();
+        // }
         
-        cg_->solve();
+        // cg_->solve();
 
         computeVelocities();
 
