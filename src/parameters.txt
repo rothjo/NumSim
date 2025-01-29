@@ -4,11 +4,11 @@
 # Problem description
 physicalSizeX = 2.0   # physical size of the domain
 physicalSizeY = 2.0
-endTime = 30        # duration of the simulation
+endTime = 10        # duration of the simulation
 re = 1000             # Reynolds number
 pr = 1                # Prandtl number
 gX = 0.0              # external forces, set to (gX,gY) = (0,-9.81) to account for gravity
-gY = -9.81
+gY = 0.0
 beta = 0.001           # dimensionless heat coeff
 initialTemp = 300     # initial Temperature
 
@@ -26,17 +26,17 @@ dirichletTopTemp = 304
 dirichletBottomTemp = 300
 
 # Discretization parameters
-nCellsX = 40         # number of cells in x and y direction
-nCellsY = 40
+nCellsX = 16         # number of cells in x and y direction
+nCellsY = 16
 useDonorCell = true   # if donor cell discretization should be used, possible values: true false
-computeHeat = true    # if Temperature should be computed, possible values: true false
+computeHeat = false   # if Temperature should be computed, possible values: true false
 alpha = 0.5           # factor for donor-cell scheme, 0 is equivalent to central differences
 gamma = 0.5           # factor for donor-cell scheme, 0 is equivalent to central differences (Temperature scheme)
 tau = 0.5             # safety factor for time step width
 maximumDt = 0.1       # maximum values for time step width
 
 # Solver parameters
-pressureSolver = CG  # which pressure solver to use, possible values: GaussSeidel SOR CG
+pressureSolver = CG  # which pressure solver to use, possible values: GaussSeidel SOR CG Multigrid
 omega = 1.6           # overrelaxation factor, only for SOR solver
 epsilon = 1e-5        # tolerance for 2-norm of residual
 maximumNumberOfIterations = 1e4    # maximum number of iterations in the solver
