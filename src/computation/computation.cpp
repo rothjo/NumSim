@@ -68,6 +68,8 @@ void Computation::runSimulation() {
             dt_ = settings_.endTime - time;
         }
         time += dt_;
+        // std::cout << std::endl;
+        // std::cout << time << std::endl;
 
         if (settings_.computeHeat) {
             computeTemperature();
@@ -93,11 +95,11 @@ void Computation::runSimulation() {
         // outputWriterText_->writeFile(time); // Output
 
         // Output
-        // if (time >= output) {
-        //     // (*outputWriterParaview_).writeFile(time); // Output
-        //     outputWriterText_->writeFile(time); // Output
-        //     output = output + 0.1;
-        // }
+        if (time >= output) {
+            // (*outputWriterParaview_).writeFile(time); // Output
+            // outputWriterText_->writeFile(time); // Output
+            output = output + 0.1;
+        }
     }
 }
 

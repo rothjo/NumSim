@@ -37,6 +37,8 @@ private:
 
     void vCycle(std::shared_ptr<Discretization> discretization);
 
+    void wCycle(std::shared_ptr<Discretization> discretization);
+
     /**
      * @brief Compute the residual for a given grid level.
      * @param grid The grid to compute the residual on.

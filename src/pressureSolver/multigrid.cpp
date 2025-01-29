@@ -14,9 +14,17 @@ Multigrid::Multigrid(std::shared_ptr<Discretization> baseDiscretization, double 
 
 // Solve method
 void Multigrid::solve() {
+    int maxCycles = 1000;
+    int iteration = 0;
+    const double eps2 = epsilon_ * epsilon_;
+    computeResidualNorm();
 
-    for (int i = 0; i < 10; ++i) {
+    while (residualNorm2_ > eps2 && iteration < maxCycles) {
+        ++iteration;
         vCycle(discretization_);
+        // std::cout<< "Iteration: " << iteration << " Residual: " << residualNorm2_ << std::endl;
+        computeResidualNorm();
+
     }
 
 }
@@ -38,8 +46,8 @@ void Multigrid::vCycle(std::shared_ptr<Discretization> discretization) {
     computeResidual(discretization, residual);
 
     // Restrict residual to coarser grid -> New Fieldvariable rhs
-    std::shared_ptr<Discretization> coarseDiscretization = std::make_shared<DonorCell>(std::array<int, 2>{discretization->nCells()[0] / 2 + 3, discretization->nCells()[1] / 2 + 3}, std::array<double, 2>{discretization->meshWidth()[0] * 2, discretization->meshWidth()[1] * 2}, partitioning_, 0.5);
-    FieldVariable coarseResidual = FieldVariable(coarseDiscretization->nCells(), {-1.5 * coarseDiscretization->meshWidth()[0], -1.5 * coarseDiscretization->meshWidth()[1]}, coarseDiscretization->meshWidth());
+    std::shared_ptr<Discretization> coarseDiscretization = std::make_shared<DonorCell>(std::array<int, 2>{discretization->nCells()[0] / 2, discretization->nCells()[1] / 2}, std::array<double, 2>{discretization->meshWidth()[0] * 2, discretization->meshWidth()[1] * 2}, partitioning_, 0.5);
+    FieldVariable coarseResidual = coarseDiscretization->p();
     restrictToCoarserGrid(residual, coarseResidual, coarseDiscretization);
 
     for (int i = coarseDiscretization->pIBegin(); i < coarseDiscretization->pIEnd(); ++i) {
@@ -64,7 +72,83 @@ void Multigrid::vCycle(std::shared_ptr<Discretization> discretization) {
         }
     }
 
-    
+    // Post-smoothing p, rhs
+    smoother.solve();
+
+}
+
+void Multigrid::wCycle(std::shared_ptr<Discretization> discretization) {
+
+    if (discretization->nCells()[0] == 2) {
+        GaussSeidel coarsesmoother = GaussSeidel(discretization, epsilon_, maximumNumberOfIterations_);
+        coarsesmoother.solve();
+        return;
+    }
+    // Pre-smoothing
+    // Init gaussseidel, solve on discretization, eps, maximumNumberIter
+    GaussSeidel smoother = GaussSeidel(discretization, epsilon_, 2);
+    smoother.solve();
+
+    // Compute residual with p, rhs
+    FieldVariable residual = discretization->p();
+    computeResidual(discretization, residual);
+
+    // Restrict residual to coarser grid -> New Fieldvariable rhs
+    std::shared_ptr<Discretization> coarseDiscretization = std::make_shared<DonorCell>(std::array<int, 2>{discretization->nCells()[0] / 2, discretization->nCells()[1] / 2}, std::array<double, 2>{discretization->meshWidth()[0] * 2, discretization->meshWidth()[1] * 2}, partitioning_, 0.5);
+    FieldVariable coarseResidual = coarseDiscretization->p();
+    restrictToCoarserGrid(residual, coarseResidual, coarseDiscretization);
+
+    for (int i = coarseDiscretization->pIBegin(); i < coarseDiscretization->pIEnd(); ++i) {
+        for (int j = coarseDiscretization->pJBegin(); j < coarseDiscretization->pJEnd(); ++j) {
+            coarseDiscretization->rhs(i, j) = coarseResidual(i, j);
+        }
+    }
+
+    // if smallest grid size, do coarse level solve
+    // else vCycle(error, rhs)
+    wCycle(coarseDiscretization);
+
+    FieldVariable correction = discretization->p();
+
+    // Prologate error to finer grid -> New Fieldvariable error p = p + prolongate(error)
+    prolongation(coarseDiscretization, correction);
+
+    // add error
+    for (int i = discretization->pIBegin(); i < discretization->pIEnd(); ++i) {
+        for (int j = discretization->pJBegin(); j < discretization->pJEnd(); ++j) {
+            discretization->p(i, j) += correction(i, j);
+        }
+    }
+
+    smoother.solve();
+
+    // Compute residual with p, rhs
+    residual = discretization->p();
+    computeResidual(discretization, residual);
+
+    // Restrict residual to coarser grid -> New Fieldvariable rhs
+    coarseResidual = coarseDiscretization->p();
+    restrictToCoarserGrid(residual, coarseResidual, coarseDiscretization);
+
+    for (int i = coarseDiscretization->pIBegin(); i < coarseDiscretization->pIEnd(); ++i) {
+        for (int j = coarseDiscretization->pJBegin(); j < coarseDiscretization->pJEnd(); ++j) {
+            coarseDiscretization->rhs(i, j) = coarseResidual(i, j);
+        }
+    }
+
+    wCycle(coarseDiscretization);
+
+    correction = discretization->p();
+
+    // Prologate error to finer grid -> New Fieldvariable error p = p + prolongate(error)
+    prolongation(coarseDiscretization, correction);
+
+    // add error
+    for (int i = discretization->pIBegin(); i < discretization->pIEnd(); ++i) {
+        for (int j = discretization->pJBegin(); j < discretization->pJEnd(); ++j) {
+            discretization->p(i, j) += correction(i, j);
+        }
+    }
 
     // Post-smoothing p, rhs
     smoother.solve();
@@ -97,6 +181,8 @@ void Multigrid::restrictToCoarserGrid(FieldVariable& fineResidual, FieldVariable
         for (int j = coarseDiscretization->pJBegin(); j < coarseDiscretization->pJEnd(); ++j) {
             int i_fine = 2 * i - coarseDiscretization->pIBegin();
             int j_fine = 2 * j - coarseDiscretization->pJBegin();
+            // std::cout << "i:" <<i << "j:"<< j << std::endl;
+            // std::cout << coarseResidual.size()[0] << "loopsize" << coarseDiscretization->pJEnd() - coarseDiscretization->pJBegin() << std::endl;
             coarseResidual(i, j) = 0.25 * (fineResidual(i_fine, j_fine) +
                                                   fineResidual(i_fine + 1, j_fine) +
                                                   fineResidual(i_fine, j_fine + 1) +
