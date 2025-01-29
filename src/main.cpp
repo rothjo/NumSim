@@ -17,7 +17,7 @@
 #include "partitioning/partitioning.h"
 #include <array>
 #include <unistd.h>
-
+#include <chrono>
 
 int main(int argc, char *argv[])
 {
@@ -26,11 +26,30 @@ int main(int argc, char *argv[])
   // comp.initialize(argc, argv);
   // comp.runSimulation();
 
+  
+
+
+  
   MPI_Init(&argc, &argv);
   // MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
   ParallelComputation parallelcomp;
   parallelcomp.initialize(argc, argv);
+
+  double start_time = MPI_Wtime();
+
   parallelcomp.runSimulation();
+
+  double end_time = MPI_Wtime();
+  double elapsed_time = end_time - start_time;
+  
+
+  // Rank 0 prints the elapsed time
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  if (rank == 0) {
+      std::cout << "Total elapsed time: " << elapsed_time << " seconds" << std::endl;
+  }
+
   MPI_Finalize();
 
   return EXIT_SUCCESS;
