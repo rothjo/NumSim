@@ -190,17 +190,35 @@ void Multigrid::restrictToCoarserGrid(FieldVariable& fineResidual, FieldVariable
         }
     }
 }
-//! TODO: use bilinear interpolation instead of constant interpolation
-// Prolongate correction to finer grid (void version)
+
 void Multigrid::prolongation(std::shared_ptr<Discretization> coarseDiscretization, FieldVariable& correction) {
+    double x_origin = -1.5 * coarseDiscretization->meshWidth()[0];
+    double y_origin = -1.5 * coarseDiscretization->meshWidth()[0];
+    double half_dx = 0.5*coarseDiscretization->meshWidth()[0];
     for (int i = coarseDiscretization->pIBegin(); i < coarseDiscretization->pIEnd(); ++i) {
         for (int j = coarseDiscretization->pJBegin(); j < coarseDiscretization->pJEnd(); ++j) {
             int i_fine = 2 * i - coarseDiscretization->pIBegin();
             int j_fine = 2 * j - coarseDiscretization->pJBegin();
-            correction(i_fine, j_fine) = coarseDiscretization->p(i, j);
-            correction(i_fine + 1, j_fine) = coarseDiscretization->p(i, j);
-            correction(i_fine, j_fine + 1) = coarseDiscretization->p(i, j);
-            correction(i_fine + 1, j_fine + 1) = coarseDiscretization->p(i, j);
+            double x = x_origin + i*coarseDiscretization->meshWidth()[0];
+            double y = y_origin + j*coarseDiscretization->meshWidth()[1]; // Transformation to point in coarse grid
+            correction(i_fine, j_fine) = coarseDiscretization->p().interpolateAt(x - half_dx , y - half_dx);
+            correction(i_fine + 1, j_fine) = coarseDiscretization->p().interpolateAt(x + half_dx, y - half_dx);
+            correction(i_fine, j_fine + 1) = coarseDiscretization->p().interpolateAt(x - half_dx, y + half_dx);
+            correction(i_fine + 1, j_fine + 1) = coarseDiscretization->p().interpolateAt(x + half_dx, y + half_dx);
         }
     }
 }
+//! TODO: use bilinear interpolation instead of constant interpolation
+// Prolongate correction to finer grid (void version)
+// void Multigrid::prolongation(std::shared_ptr<Discretization> coarseDiscretization, FieldVariable& correction) {
+//     for (int i = coarseDiscretization->pIBegin(); i < coarseDiscretization->pIEnd(); ++i) {
+//         for (int j = coarseDiscretization->pJBegin(); j < coarseDiscretization->pJEnd(); ++j) {
+//             int i_fine = 2 * i - coarseDiscretization->pIBegin();
+//             int j_fine = 2 * j - coarseDiscretization->pJBegin();
+//             correction(i_fine, j_fine) = coarseDiscretization->p(i, j);
+//             correction(i_fine + 1, j_fine) = coarseDiscretization->p(i, j);
+//             correction(i_fine, j_fine + 1) = coarseDiscretization->p(i, j);
+//             correction(i_fine + 1, j_fine + 1) = coarseDiscretization->p(i, j);
+//         }
+//     }
+// }
