@@ -92,7 +92,7 @@ void Multigrid::vCycle(std::shared_ptr<Discretization> discretization) {
 
 void Multigrid::wCycle(std::shared_ptr<Discretization> discretization) {
 
-    if (discretization->nCells()[0] == 2) {
+    if (discretization->nCells()[0] == std::pow(2, lowestLevel_)) {
         GaussSeidel coarsesmoother = GaussSeidel(discretization, epsilon_, maximumNumberOfIterations_);
         coarsesmoother.solve();
         return;
