@@ -30,14 +30,19 @@ void Computation::initialize(int argc, char* argv[]) {
     outputWriterParaview_ = std::make_unique<OutputWriterParaview>(discretization_, *partitioning_);
     outputWriterText_ = std::make_unique<OutputWriterText>(discretization_, *partitioning_);
 
+    cg_ = std::make_unique<CG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
+
     // init pressure solvers
     if (settings_.pressureSolver == "SOR") {
         pressureSolver_ = std::make_unique<SOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega);
     } else if (settings_.pressureSolver == "GaussSeidel") {
         pressureSolver_ = std::make_unique<GaussSeidel>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
     } else if (settings_.pressureSolver == "CG") {
-        pressureSolver_ = std::make_unique<Multigrid>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, partitioning_);
-    } else {
+        pressureSolver_ = std::make_unique<CG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
+    } else if(settings_.pressureSolver == "Multigrid") {
+        pressureSolver_ = std::make_unique<Multigrid>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.multigridCycle, settings_.lowestLevel, partitioning_);
+    }
+    else {
         std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
         std::exit(1);
     }
@@ -49,6 +54,7 @@ void Computation::runSimulation() {
     double time = 0.0;
     int t_iter = 0;
     double time_epsilon = 1e-8;
+    double output = 0.0;
     
     // Loop over all time steps until t_end is reached
     while (time < (settings_.endTime - time_epsilon)) {
@@ -62,6 +68,8 @@ void Computation::runSimulation() {
             dt_ = settings_.endTime - time;
         }
         time += dt_;
+        // std::cout << std::endl;
+        // std::cout << time << std::endl;
 
         if (settings_.computeHeat) {
             computeTemperature();
@@ -75,14 +83,14 @@ void Computation::runSimulation() {
 
         computePressure();
 
-        if (settings_.pressureSolver == "CG") {
-            computeRightHandSide();
-        }
-
         computeVelocities();
 
-        outputWriterParaview_->writeFile(time); // Output
-        outputWriterText_->writeFile(time); // Output
+        // Output
+        // if (time >= output) {
+        //     (*outputWriterParaview_).writeFile(time); // Output
+        //     // outputWriterText_->writeFile(time); // Output
+        //     output = output + 0.1;
+        // }
     }
 }
 

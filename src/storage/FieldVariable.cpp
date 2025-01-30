@@ -6,42 +6,16 @@
 FieldVariable::FieldVariable(std::array<int,2> size, std::array<double,2> origin, std::array<double,2> meshWidth) :
     Array2D(size), origin_(origin), meshWidth_(meshWidth) {}
 
-// double FieldVariable::interpolateAt(double x, double y) const {
-//     // Check if x and y are located in the domain
-//     assert(0.0 <= x && x < size_[0]*meshWidth_[0]);
-//     assert(0.0 <= y && y < size_[1]*meshWidth_[1]);
-
-//     // Find the indicies i and j of the corresponding cells, we are looking for the bottom left point of the cell
-//     const int i = (x - origin_[0]) / meshWidth_[0];
-//     const int j = (y - origin_[1]) / meshWidth_[1];
-
-//     // Find the values of the fieldvariable for the interpolation at the neighbouring points
-//     const double valueLeftBottom = (*this)(i,j);
-//     const double valueRightBottom = (*this)(i + 1,j);
-//     const double valueLeftTop = (*this)(i, j + 1);
-//     const double valueRightTop = (*this)(i + 1, j + 1);
-
-//     // Find the x and y coordinates of the neighbouring points
-
-//     const double xLeft = origin_[0] + i * meshWidth_[0];
-//     const double xRight = xLeft + meshWidth_[0];
-//     const double yBottom = origin_[1] + j * meshWidth_[1];
-//     const double yTop = yBottom + meshWidth_[1];
-
-
-//     // Use bilinear interpolation to find the interpolated value
-
-//     // First, interpolate in x-direction for the bottom horizontal neighboring line 
-//     const double interpolateBottom = (xRight - x) / (xRight - xLeft) * valueLeftBottom + (x - xLeft) / (xRight - xLeft) * valueRightBottom;
-    
-//     // Interpolate in x-direction for the top horizontal neighboring line 
-//     const double interpolateTop = (xRight - x) / (xRight - xLeft) * valueLeftTop + (x - xLeft) / (xRight - xLeft) * valueRightTop;
-
-//     // Interpolate in y-direction
-//     const double interpolation = (yTop - y) / (yTop - yBottom) * interpolateBottom + (y - yBottom) / (yTop - yBottom) * interpolateTop;
-
-//     return interpolation;
-// }
+FieldVariable& FieldVariable::operator=(const FieldVariable& other) {
+    if (this != &other) {
+        Array2D::operator=(other); // Copy base class part
+        origin_[0] = other.origin_[0];
+        origin_[1] = other.origin_[1];
+        meshWidth_[0] = other.meshWidth_[0];
+        meshWidth_[1] = other.meshWidth_[1];
+    }
+    return *this;
+}
 
 // works only for constant dx, dy; rectangular grid
 double FieldVariable::interpolateAt(double x, double y) const {

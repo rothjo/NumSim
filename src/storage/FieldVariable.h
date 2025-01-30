@@ -12,6 +12,8 @@ public:
     //! constructor
     FieldVariable(std::array<int,2> size, std::array<double,2> origin, std::array<double,2> meshWidth);
 
+    FieldVariable& operator=(const FieldVariable& other);
+
     /**
      * Get the bilinear interpolated value of the discrete field variable
      * @param x x-coordinate of the point
@@ -26,7 +28,7 @@ public:
     double computeMaxAbs() const;
 
 private:
-    const std::array<double,2> origin_; //< origin of computational domain
-    const std::array<double,2> meshWidth_; //< meshWidth in x and y direction
+    std::array<double,2> origin_; //< origin of computational domain
+    std::array<double,2> meshWidth_; //< meshWidth in x and y direction
 };
   
