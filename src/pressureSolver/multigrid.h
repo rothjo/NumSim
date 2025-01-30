@@ -1,11 +1,11 @@
 #include "pressureSolver.h"
 #include "cg.h"
 #include "gaussSeidel.h"
-#include "sor.h"
 #include "discretization/donorCell.h"
 #include "partitioning/partitioning.h"
 #include <memory>
 #include <vector>
+#include <settings.h>
 
 /**
  * @brief Multigrid solver class, derived from ParallelPressureSolver.
@@ -20,7 +20,7 @@ public:
      * @param epsilon Convergence tolerance.
      * @param maximumNumberOfIterations Maximum iterations for the multigrid cycle.
      */
-    Multigrid(std::shared_ptr<Discretization> baseDiscretization, double epsilon, int maximumNumberOfIterations, std::shared_ptr<Partitioning> partitioning);
+    Multigrid(std::shared_ptr<Discretization> baseDiscretization, double epsilon, int maximumNumberOfIterations, std::string cycle, int lowestLevel, std::shared_ptr<Partitioning> partitioning);
 
     /**
      * @brief Solve the pressure equation using the multigrid method.
@@ -28,12 +28,6 @@ public:
     void solve() override;
 
 private:
-    int levels_; ///< Number of levels in the multigrid hierarchy.
-
-    std::vector<std::shared_ptr<Discretization>> grids_; ///< Hierarchy of grids (finest to coarsest).
-    std::vector<std::shared_ptr<PressureSolver>> smoothers_; ///< Smoothers for each level.
-    // std::vector<FieldVariable> errors_; ///< Error grid for each level.
-
 
     void vCycle(std::shared_ptr<Discretization> discretization);
 
@@ -45,13 +39,6 @@ private:
      * @param residual The residual field variable to populate.
      */
     void computeResidual(std::shared_ptr<Discretization> discretization, FieldVariable& residual);
-
-    /**
-     * @brief Copy the values of a source field variable to a target field variable.
-     * @param source The source field variable.
-     * @param target The target field variable.
-     */
-    void copyFieldVariable(FieldVariable& source, FieldVariable& target, std::shared_ptr<Discretization> discretization);
 
     /**
      * @brief Restrict a residual from a fine grid to a coarser grid.
@@ -70,4 +57,7 @@ private:
     // void applyCorrection(int level);
 
     std::shared_ptr<Partitioning> partitioning_;
+    std::string cycle_;
+    int lowestLevel_;
+    int maxLevel_; ///< Number of levels in the multigrid hierarchy.
 };

@@ -35,6 +35,8 @@ struct Settings
   double omega = 1.0;                //< overrelaxation factor
   double epsilon = 1e-5;             //< tolerance for the residual in the pressure solver
   int maximumNumberOfIterations = 1e5;    //< maximum number of iterations in the solver
+  std::string multigridCycle = "V";    //< which multigrid cycle to use
+  int lowestLevel = 1;              //< lowest level of the multigrid solver
 
   //! parse a text file with settings, each line contains "<parameterName> = <value>"
   void loadFromFile(std::string filename);

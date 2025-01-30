@@ -4,36 +4,49 @@
 
 // Constructor
 Multigrid::Multigrid(std::shared_ptr<Discretization> baseDiscretization, double epsilon,
-                    int maximumNumberOfIterations, std::shared_ptr<Partitioning> partitioning)
+                    int maximumNumberOfIterations, std::string cycle, int lowestLevel, std::shared_ptr<Partitioning> partitioning)
     : PressureSolver(baseDiscretization, epsilon, maximumNumberOfIterations),
+      cycle_(cycle),
+      lowestLevel_(lowestLevel),
       partitioning_(partitioning),
-      levels_(std::log2(baseDiscretization->nCells()[0])) {
+      maxLevel_(std::log2(baseDiscretization->nCells()[0])) {
     assert((baseDiscretization->nCells()[0] == baseDiscretization->nCells()[1] && baseDiscretization->nCells()[0] > 0 &&  (baseDiscretization->nCells()[0] & (baseDiscretization->nCells()[0] - 1)) == 0) &&
            "Number of cells in each direction must be a power of 2.");
+    assert((lowestLevel_ <= maxLevel_) && "lowestLevel must be smaller than maxLevel!");
 }
 
 // Solve method
 void Multigrid::solve() {
-    int maxCycles = 1000;
+    int maxCycles = 100;
     int iteration = 0;
     const double eps2 = epsilon_ * epsilon_;
     computeResidualNorm();
 
-    while (residualNorm2_ > eps2 && iteration < maxCycles) {
+    if (cycle_ == "V") {
+        while (residualNorm2_ > eps2 && iteration < maxCycles) {
         ++iteration;
         vCycle(discretization_);
-        // std::cout<< "Iteration: " << iteration << " Residual: " << residualNorm2_ << std::endl;
+        // std::cout<< "Iteration: " << iteration << " Residual: " << residualNorm2_ <<"V"  <<  std::endl;
         computeResidualNorm();
-
+        }
+    } else if (cycle_ == "W") {
+        while (residualNorm2_ > eps2 && iteration < maxCycles) {
+        ++iteration;
+        wCycle(discretization_);
+        // std::cout<< "Iteration: " << iteration << " Residual: " << residualNorm2_ <<"W"  <<  std::endl;
+        computeResidualNorm();
+        }
     }
+
 
 }
 //! TODO: implement with pointers
 void Multigrid::vCycle(std::shared_ptr<Discretization> discretization) {
 
-    if (discretization->nCells()[0] == 2) {
+    if (discretization->nCells()[0] == std::pow(2, lowestLevel_)) {
         GaussSeidel coarsesmoother = GaussSeidel(discretization, epsilon_, maximumNumberOfIterations_);
         coarsesmoother.solve();
+        std::cout << lowestLevel_ << "coarsest grid" << discretization->nCells()[0] << std::endl;
         return;
     }
     // Pre-smoothing
@@ -163,14 +176,6 @@ void Multigrid::computeResidual(std::shared_ptr<Discretization> discretization, 
             const double dy_2 = discretization->dy() * discretization->dy();
             double laplaceP = ((discretization->p(i + 1, j) - 2.0 * discretization->p(i, j) + discretization->p(i - 1, j)) / dx_2) + ((discretization->p(i, j + 1) - 2.0 * discretization->p(i, j) + discretization->p(i, j - 1)) / dy_2);
             residual(i, j) = discretization->rhs(i, j) - laplaceP;
-        }
-    }
-}
-
-void Multigrid::copyFieldVariable(FieldVariable& source, FieldVariable& target, std::shared_ptr<Discretization> discretization) {
-    for (int i = discretization->pIBegin(); i < discretization->pIEnd(); ++i) {
-        for (int j = discretization->pJBegin(); j < discretization->pJEnd(); ++j) {
-            target(i, j) = source(i, j);
         }
     }
 }

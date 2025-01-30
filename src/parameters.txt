@@ -26,17 +26,20 @@ dirichletTopTemp = 304
 dirichletBottomTemp = 300
 
 # Discretization parameters
-nCellsX = 16         # number of cells in x and y direction
-nCellsY = 16
+nCellsX = 32         # number of cells in x and y direction (must be a power of 2 for multigrid!)
+nCellsY = 32
 useDonorCell = true   # if donor cell discretization should be used, possible values: true false
-computeHeat = false   # if Temperature should be computed, possible values: true false
+computeHeat = true   # if Temperature should be computed, possible values: true false
 alpha = 0.5           # factor for donor-cell scheme, 0 is equivalent to central differences
 gamma = 0.5           # factor for donor-cell scheme, 0 is equivalent to central differences (Temperature scheme)
 tau = 0.5             # safety factor for time step width
 maximumDt = 0.1       # maximum values for time step width
 
 # Solver parameters
-pressureSolver = CG  # which pressure solver to use, possible values: GaussSeidel SOR CG Multigrid
+pressureSolver = Multigrid  # which pressure solver to use, possible values: GaussSeidel SOR CG Multigrid
 omega = 1.6           # overrelaxation factor, only for SOR solver
 epsilon = 1e-5        # tolerance for 2-norm of residual
 maximumNumberOfIterations = 1e4    # maximum number of iterations in the solver
+multigridCycle = V    # which cycle to use, possible values: V, W
+lowestLevel = 1      # Set the lowest level to solve coarse grid equation completely, 1 equals 2x2, 2 equals 4x4 ...
+                     # must be smaller than possible max level!
