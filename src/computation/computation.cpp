@@ -1,10 +1,20 @@
 #include "computation.h"
 #include <cmath>
+#include <chrono>  
+#include <fstream> 
 
 
 void Computation::initialize(int argc, char* argv[]) {
     // load settigns from file
     std::string filename = argv[1];
+    filename_ = filename;
+
+    // Remove ".txt" if it exists
+    size_t pos = filename_.rfind(".txt");
+    if (pos != std::string::npos) {
+        filename_ = filename_.substr(0, pos);
+    }
+    std::cout << filename_ << std::endl;
     settings_.loadFromFile(filename);
     partitioning_ = std::make_shared<Partitioning>();
     partitioning_->initialize(settings_.nCells);
@@ -49,12 +59,23 @@ void Computation::initialize(int argc, char* argv[]) {
 }
 
 void Computation::runSimulation() {
+
     applyInitalBoundaryValues();
 
     double time = 0.0;
     int t_iter = 0;
     double time_epsilon = 1e-8;
     double output = 0.0;
+
+    
+    std::ofstream runtimeFile(filename_ + "_performance.csv");
+
+    // Write headers
+    runtimeFile << "TotalTime,Iterations\n";
+
+    // Start measuring runtime
+    auto startTime = std::chrono::high_resolution_clock::now();
+
     
     // Loop over all time steps until t_end is reached
     while (time < (settings_.endTime - time_epsilon)) {
@@ -92,6 +113,12 @@ void Computation::runSimulation() {
         //     output = output + 0.1;
         // }
     }
+    auto endTime = std::chrono::high_resolution_clock::now();
+    double totalTime = std::chrono::duration<double>(endTime - startTime).count();
+    runtimeFile << totalTime << "," << t_iter << "\n";
+    runtimeFile.close();
+
+    std::cout << "Performance results saved for " << filename_ << std::endl;
 }
 
 void Computation::computeTimeStepWidth() {

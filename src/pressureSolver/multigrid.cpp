@@ -17,6 +17,7 @@ Multigrid::Multigrid(std::shared_ptr<Discretization> baseDiscretization, double 
 
 // Solve method
 void Multigrid::solve() {
+    // std::vector<int> coarseGridIterations; 
     int maxCycles = 100;
     int iteration = 0;
     const double eps2 = epsilon_ * epsilon_;
@@ -26,6 +27,7 @@ void Multigrid::solve() {
         while (residualNorm2_ > eps2 && iteration < maxCycles) {
         ++iteration;
         vCycle(discretization_);
+
         // std::cout<< "Iteration: " << iteration << " Residual: " << residualNorm2_ <<"V"  <<  std::endl;
         computeResidualNorm();
         }
@@ -46,7 +48,8 @@ void Multigrid::vCycle(std::shared_ptr<Discretization> discretization) {
     if (discretization->nCells()[0] == std::pow(2, lowestLevel_)) {
         GaussSeidel coarsesmoother = GaussSeidel(discretization, epsilon_, maximumNumberOfIterations_);
         coarsesmoother.solve();
-        std::cout << lowestLevel_ << "coarsest grid" << discretization->nCells()[0] << std::endl;
+        std::cout << coarsesmoother.numberOfIterations() << "coarsest grid" << std::endl;
+        // std::cout << lowestLevel_ << "coarsest grid" << discretization->nCells()[0] << std::endl;
         return;
     }
     // Pre-smoothing

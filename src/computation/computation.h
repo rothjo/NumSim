@@ -90,6 +90,7 @@ protected:
 
     // set attributes
     Settings settings_;
+    std::string filename_;
     std::shared_ptr<Discretization> discretization_;
     std::unique_ptr<PressureSolver> pressureSolver_;
     std::unique_ptr<OutputWriterParaview> outputWriterParaview_;
