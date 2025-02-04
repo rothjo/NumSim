@@ -133,7 +133,7 @@ void Computation::runSimulation() {
     }
     auto endTime = std::chrono::high_resolution_clock::now();
     double totalTime = std::chrono::duration<double>(endTime - startTime).count();
-    runtimeFile << totalTime << "," << t_iter << "\n";
+    runtimeFile << totalTime << "\n";
     runtimeFile << "CycleIterations\n";
     for (const int &iteration : cycleIterations) {
         runtimeFile << iteration << "\n";
