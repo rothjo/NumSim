@@ -176,6 +176,12 @@ void Settings::loadFromFile(std::string filename)
     else if (parameterName == "lowestLevel"){
       lowestLevel = atoi(value.c_str());
     }
+    else if (parameterName == "smoothingIterations"){
+      smoothingIterations= atoi(value.c_str());
+    }
+    else if (parameterName == "coarseGridIterations"){
+      coarseGridIterations = atoi(value.c_str());
+    }
     else{
       std::cout << "Unknown parameter \"" << parameterName << "\" in line " << lineNo << std::endl;
     }

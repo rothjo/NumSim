@@ -4,12 +4,15 @@
 
 // Constructor
 Multigrid::Multigrid(std::shared_ptr<Discretization> baseDiscretization, double epsilon,
-                    int maximumNumberOfIterations, std::string cycle, int lowestLevel, std::shared_ptr<Partitioning> partitioning)
+                    int maximumNumberOfIterations, std::string cycle, int lowestLevel, std::shared_ptr<Partitioning> partitioning,
+                    int smoothingIterations, int coarseGridIterations)
     : PressureSolver(baseDiscretization, epsilon, maximumNumberOfIterations),
-      cycle_(cycle),
-      lowestLevel_(lowestLevel),
-      partitioning_(partitioning),
-      maxLevel_(std::log2(baseDiscretization->nCells()[0])) {
+        cycle_(cycle),
+        lowestLevel_(lowestLevel),
+        partitioning_(partitioning),
+        smoothingIterations_(smoothingIterations),
+        coarseGridIterations_(coarseGridIterations),
+        maxLevel_(std::log2(baseDiscretization->nCells()[0])) {
     assert((baseDiscretization->nCells()[0] == baseDiscretization->nCells()[1] && baseDiscretization->nCells()[0] > 0 &&  (baseDiscretization->nCells()[0] & (baseDiscretization->nCells()[0] - 1)) == 0) &&
            "Number of cells in each direction must be a power of 2.");
     assert((lowestLevel_ <= maxLevel_) && "lowestLevel must be smaller than maxLevel!");
@@ -17,7 +20,6 @@ Multigrid::Multigrid(std::shared_ptr<Discretization> baseDiscretization, double 
 
 // Solve method
 void Multigrid::solve() {
-    // std::vector<int> coarseGridIterations; 
     int maxCycles = 100;
     int iteration = 0;
     const double eps2 = epsilon_ * epsilon_;
@@ -39,22 +41,21 @@ void Multigrid::solve() {
         computeResidualNorm();
         }
     }
-
-
+    numberOfIterations_ = iteration;
 }
-//! TODO: implement with pointers
+
 void Multigrid::vCycle(std::shared_ptr<Discretization> discretization) {
 
     if (discretization->nCells()[0] == std::pow(2, lowestLevel_)) {
-        GaussSeidel coarsesmoother = GaussSeidel(discretization, epsilon_, maximumNumberOfIterations_);
+        GaussSeidel coarsesmoother = GaussSeidel(discretization, epsilon_, coarseGridIterations_);
         coarsesmoother.solve();
-        std::cout << coarsesmoother.numberOfIterations() << "coarsest grid" << std::endl;
+        // std::cout << coarsesmoother.numberOfIterations() << "coarsest grid" << std::endl;
         // std::cout << lowestLevel_ << "coarsest grid" << discretization->nCells()[0] << std::endl;
         return;
     }
     // Pre-smoothing
     // Init gaussseidel, solve on discretization, eps, maximumNumberIter
-    GaussSeidel smoother = GaussSeidel(discretization, epsilon_, 2);
+    GaussSeidel smoother = GaussSeidel(discretization, epsilon_, smoothingIterations_);
     smoother.solve();
 
     // Compute residual with p, rhs
@@ -96,13 +97,13 @@ void Multigrid::vCycle(std::shared_ptr<Discretization> discretization) {
 void Multigrid::wCycle(std::shared_ptr<Discretization> discretization) {
 
     if (discretization->nCells()[0] == std::pow(2, lowestLevel_)) {
-        GaussSeidel coarsesmoother = GaussSeidel(discretization, epsilon_, maximumNumberOfIterations_);
+        GaussSeidel coarsesmoother = GaussSeidel(discretization, epsilon_, coarseGridIterations_);
         coarsesmoother.solve();
         return;
     }
     // Pre-smoothing
     // Init gaussseidel, solve on discretization, eps, maximumNumberIter
-    GaussSeidel smoother = GaussSeidel(discretization, epsilon_, 2);
+    GaussSeidel smoother = GaussSeidel(discretization, epsilon_, smoothingIterations_);
     smoother.solve();
 
     // Compute residual with p, rhs
@@ -216,17 +217,4 @@ void Multigrid::prolongation(std::shared_ptr<Discretization> coarseDiscretizatio
         }
     }
 }
-//! TODO: use bilinear interpolation instead of constant interpolation
-// Prolongate correction to finer grid (void version)
-// void Multigrid::prolongation(std::shared_ptr<Discretization> coarseDiscretization, FieldVariable& correction) {
-//     for (int i = coarseDiscretization->pIBegin(); i < coarseDiscretization->pIEnd(); ++i) {
-//         for (int j = coarseDiscretization->pJBegin(); j < coarseDiscretization->pJEnd(); ++j) {
-//             int i_fine = 2 * i - coarseDiscretization->pIBegin();
-//             int j_fine = 2 * j - coarseDiscretization->pJBegin();
-//             correction(i_fine, j_fine) = coarseDiscretization->p(i, j);
-//             correction(i_fine + 1, j_fine) = coarseDiscretization->p(i, j);
-//             correction(i_fine, j_fine + 1) = coarseDiscretization->p(i, j);
-//             correction(i_fine + 1, j_fine + 1) = coarseDiscretization->p(i, j);
-//         }
-//     }
-// }
+

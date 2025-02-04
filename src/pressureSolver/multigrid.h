@@ -20,7 +20,7 @@ public:
      * @param epsilon Convergence tolerance.
      * @param maximumNumberOfIterations Maximum iterations for the multigrid cycle.
      */
-    Multigrid(std::shared_ptr<Discretization> baseDiscretization, double epsilon, int maximumNumberOfIterations, std::string cycle, int lowestLevel, std::shared_ptr<Partitioning> partitioning);
+    Multigrid(std::shared_ptr<Discretization> baseDiscretization, double epsilon, int maximumNumberOfIterations, std::string cycle, int lowestLevel, std::shared_ptr<Partitioning> partitioning, int smoothingIterations, int coarseGridIterations);
 
     /**
      * @brief Solve the pressure equation using the multigrid method.
@@ -60,4 +60,6 @@ private:
     std::string cycle_;
     int lowestLevel_;
     int maxLevel_; ///< Number of levels in the multigrid hierarchy.
+    int smoothingIterations_; ///< Number of smoothing iterations.
+    int coarseGridIterations_; ///< Number of iterations on the coarsest grid.
 };

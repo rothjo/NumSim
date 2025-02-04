@@ -50,7 +50,7 @@ void Computation::initialize(int argc, char* argv[]) {
     } else if (settings_.pressureSolver == "CG") {
         pressureSolver_ = std::make_unique<CG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
     } else if(settings_.pressureSolver == "Multigrid") {
-        pressureSolver_ = std::make_unique<Multigrid>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.multigridCycle, settings_.lowestLevel, partitioning_, settings_.smoothingIterations, settings_.coarseGridIterations);
+        pressureSolver_ = std::make_unique<Multigrid>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.multigridCycle, settings_.lowestLevel, partitioning_);
     }
     else {
         std::cerr << "Unknown pressure solver: " << settings_.pressureSolver << std::endl;
@@ -66,27 +66,12 @@ void Computation::runSimulation() {
     int t_iter = 0;
     double time_epsilon = 1e-8;
     double output = 0.0;
-    std::vector<int> cycleIterations;
 
     
     std::ofstream runtimeFile(filename_ + "_performance.csv");
 
     // Write headers
-    runtimeFile << "GridSize\n";
-    runtimeFile << settings_.nCells[0] << "\n";
-    runtimeFile << "PressureSolver\n";
-    runtimeFile << settings_.pressureSolver << "\n";
-    if (settings_.pressureSolver == "Multigrid") {
-        runtimeFile << "CycleType\n";
-        runtimeFile << settings_.multigridCycle << "\n";
-        runtimeFile << "LowestLevel\n";
-        runtimeFile << settings_.lowestLevel << "\n";
-        runtimeFile << "smoothingIterations\n";
-        runtimeFile << settings_.smoothingIterations << "\n";
-        runtimeFile << "coarseGridIterations\n";
-        runtimeFile << settings_.coarseGridIterations << "\n";
-    }
-    runtimeFile << "TotalTime\n";
+    runtimeFile << "TotalTime,Iterations\n";
 
     // Start measuring runtime
     auto startTime = std::chrono::high_resolution_clock::now();
@@ -119,9 +104,6 @@ void Computation::runSimulation() {
 
         computePressure();
 
-        if (settings_.pressureSolver == "Multigrid") {
-            cycleIterations.push_back(pressureSolver_->numberOfIterations());
-        }
         computeVelocities();
 
         // Output
@@ -134,11 +116,6 @@ void Computation::runSimulation() {
     auto endTime = std::chrono::high_resolution_clock::now();
     double totalTime = std::chrono::duration<double>(endTime - startTime).count();
     runtimeFile << totalTime << "," << t_iter << "\n";
-    runtimeFile << "CycleIterations\n";
-    for (const int &iteration : cycleIterations) {
-        runtimeFile << iteration << "\n";
-    }
-    
     runtimeFile.close();
 
     std::cout << "Performance results saved for " << filename_ << std::endl;

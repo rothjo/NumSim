@@ -37,6 +37,8 @@ struct Settings
   int maximumNumberOfIterations = 1e5;    //< maximum number of iterations in the solver
   std::string multigridCycle = "V";    //< which multigrid cycle to use
   int lowestLevel = 1;              //< lowest level of the multigrid solver
+  int smoothingIterations = 2;       //< number of smoothing iterations in the multigrid solver
+  int coarseGridIterations = 10;      //< number of iterations on the coarsest grid
 
   //! parse a text file with settings, each line contains "<parameterName> = <value>"
   void loadFromFile(std::string filename);
