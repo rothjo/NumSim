@@ -93,7 +93,8 @@ void Computation::runSimulation() {
 
     
     // Loop over all time steps until t_end is reached
-    while (time < (settings_.endTime - time_epsilon)) {
+    //while (time < (settings_.endTime - time_epsilon)) {  
+    for (int i = 0; i < 5; i++) {
         
         applyBoundaryValues();
         
@@ -119,9 +120,7 @@ void Computation::runSimulation() {
 
         computePressure();
 
-        if (settings_.pressureSolver == "Multigrid") {
-            cycleIterations.push_back(pressureSolver_->numberOfIterations());
-        }
+        cycleIterations.push_back(pressureSolver_->numberOfIterations());
         computeVelocities();
 
         // Output
@@ -137,6 +136,10 @@ void Computation::runSimulation() {
     runtimeFile << "CycleIterations\n";
     for (const int &iteration : cycleIterations) {
         runtimeFile << iteration << "\n";
+    }
+    runtimeFile << "Residuals\n";
+    for (const double &residual : pressureSolver_->residualNormVector()) {
+        runtimeFile << residual << "\n";
     }
     
     runtimeFile.close();

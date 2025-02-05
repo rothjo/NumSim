@@ -24,6 +24,7 @@ void Multigrid::solve() {
     int iteration = 0;
     const double eps2 = epsilon_ * epsilon_;
     computeResidualNorm();
+    residualNormVector_.push_back(residualNorm2_);
 
     if (cycle_ == "V") {
         while (residualNorm2_ > eps2 && iteration < maxCycles) {
@@ -32,6 +33,7 @@ void Multigrid::solve() {
 
         // std::cout<< "Iteration: " << iteration << " Residual: " << residualNorm2_ <<"V"  <<  std::endl;
         computeResidualNorm();
+        residualNormVector_.push_back(residualNorm2_);
         }
     } else if (cycle_ == "W") {
         while (residualNorm2_ > eps2 && iteration < maxCycles) {
@@ -39,6 +41,7 @@ void Multigrid::solve() {
         wCycle(discretization_);
         // std::cout<< "Iteration: " << iteration << " Residual: " << residualNorm2_ <<"W"  <<  std::endl;
         computeResidualNorm();
+        residualNormVector_.push_back(residualNorm2_);
         }
     }
     numberOfIterations_ = iteration;

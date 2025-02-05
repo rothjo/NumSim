@@ -20,6 +20,8 @@ public:
      * Get the number of iterations needed to solve the pressure field variable
      */
     int numberOfIterations();
+
+    std::vector<double> residualNormVector();
 protected:
 
     /**
@@ -49,4 +51,5 @@ protected:
     int maximumNumberOfIterations_;
     double residualNorm2_;
     int numberOfIterations_;
+    std::vector<double> residualNormVector_;
 };
