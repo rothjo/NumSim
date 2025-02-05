@@ -1,0 +1,7 @@
+GridSize
+32
+PressureSolver
+GaussSeidel
+TotalTime
+7.30042,0
+CycleIterations
