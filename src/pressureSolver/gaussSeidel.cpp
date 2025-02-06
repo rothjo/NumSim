@@ -14,6 +14,7 @@ void GaussSeidel::solve() {
     int iteration = 0;
     // applyBoundaryValues(); already set at t = 0
     computeResidualNorm();
+    // residualNormVector_.push_back(residualNorm2_);
 
     while (residualNorm2_ > eps2 && iteration < maximumNumberOfIterations_) {
         ++iteration;
@@ -26,6 +27,7 @@ void GaussSeidel::solve() {
         }
         setBoundaryValues();
         computeResidualNorm();
+        // residualNormVector_.push_back(residualNorm2_);
 
         
     }

@@ -53,3 +53,7 @@ double PressureSolver::laplaceP(int i, int j) const {
 int PressureSolver::numberOfIterations() {
     return numberOfIterations_;
 }
+
+std::vector<double> PressureSolver::residualNormVector() {
+    return residualNormVector_;
+}
