@@ -86,7 +86,8 @@ void Computation::runSimulation() {
         runtimeFile << "coarseGridIterations\n";
         runtimeFile << settings_.coarseGridIterations << "\n";
     }
-    runtimeFile << "TotalTime\n";
+    runtimeFile << "TotalTime(pressureSolver only)\n";
+    // double totalTime = 0.0;
 
     // Start measuring runtime
     auto startTime = std::chrono::high_resolution_clock::now();
@@ -116,12 +117,13 @@ void Computation::runSimulation() {
         // applyPreliminaryBoundaryValues();
 
         computeRightHandSide();
-
+        // auto startTime = std::chrono::high_resolution_clock::now();
         computePressure();
+        // auto endTime = std::chrono::high_resolution_clock::now();
+        // totalTime += std::chrono::duration<double>(endTime - startTime).count();
 
-        if (settings_.pressureSolver == "Multigrid") {
-            cycleIterations.push_back(pressureSolver_->numberOfIterations());
-        }
+        cycleIterations.push_back(pressureSolver_->numberOfIterations());
+
         computeVelocities();
 
         // Output
