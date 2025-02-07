@@ -86,15 +86,16 @@ void Computation::runSimulation() {
         runtimeFile << "coarseGridIterations\n";
         runtimeFile << settings_.coarseGridIterations << "\n";
     }
-    runtimeFile << "TotalTime\n";
+    runtimeFile << "TotalTime(pressureSolver only)\n";
+    // double totalTime = 0.0;
 
     // Start measuring runtime
     auto startTime = std::chrono::high_resolution_clock::now();
 
     
     // Loop over all time steps until t_end is reached
-    //while (time < (settings_.endTime - time_epsilon)) {  
-    for (int i = 0; i < 5; i++) {
+    while (time < (settings_.endTime - time_epsilon)) {  
+    // for (int i = 0; i < 5; i++) {
         
         applyBoundaryValues();
         
@@ -117,8 +118,10 @@ void Computation::runSimulation() {
         // applyPreliminaryBoundaryValues();
 
         computeRightHandSide();
-
+        // auto startTime = std::chrono::high_resolution_clock::now();
         computePressure();
+        // auto endTime = std::chrono::high_resolution_clock::now();
+        // totalTime += std::chrono::duration<double>(endTime - startTime).count();
 
         cycleIterations.push_back(pressureSolver_->numberOfIterations());
         computeVelocities();
@@ -137,10 +140,10 @@ void Computation::runSimulation() {
     for (const int &iteration : cycleIterations) {
         runtimeFile << iteration << "\n";
     }
-    runtimeFile << "Residuals\n";
-    for (const double &residual : pressureSolver_->residualNormVector()) {
-        runtimeFile << residual << "\n";
-    }
+    // runtimeFile << "Residuals\n";
+    // for (const double &residual : pressureSolver_->residualNormVector()) {
+    //     runtimeFile << residual << "\n";
+    // }
     
     runtimeFile.close();
 

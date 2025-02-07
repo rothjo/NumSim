@@ -49,7 +49,7 @@ void CG::solve() {
     // Time loop
     for (int k = 0; k < maximumNumberOfIterations_; ++k) {
         dAd_ = 0.0;
-        residualNormVector_.push_back(res_old2_);
+        // residualNormVector_.push_back(res_old2_);
 
         // Compute Ad and partial dAd_ locally
         for (int i = pIBegin; i < pIEnd; i++) {
