@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
 {
   // serial program
   // measure time
-
   double start = MPI_Wtime();
   MPI_Init(&argc, &argv);
   Computation comp;

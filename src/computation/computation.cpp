@@ -41,8 +41,6 @@ void Computation::initialize(int argc, char* argv[]) {
     outputWriterParaview_ = std::make_unique<OutputWriterParaview>(discretization_, *partitioning_);
     outputWriterText_ = std::make_unique<OutputWriterText>(discretization_, *partitioning_);
 
-    cg_ = std::make_unique<CG>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations);
-
     // init pressure solvers
     if (settings_.pressureSolver == "SOR") {
         pressureSolver_ = std::make_unique<SOR>(discretization_, settings_.epsilon, settings_.maximumNumberOfIterations, settings_.omega);
@@ -72,7 +70,7 @@ void Computation::runSimulation() {
     
     std::ofstream runtimeFile(filename_ + "_performance.csv");
 
-    // Write headers
+    // Write headers for csv output
     runtimeFile << "GridSize\n";
     runtimeFile << settings_.nCells[0] << "\n";
     runtimeFile << "PressureSolver\n";
@@ -107,8 +105,6 @@ void Computation::runSimulation() {
             dt_ = settings_.endTime - time;
         }
         time += dt_;
-        // std::cout << std::endl;
-        // std::cout << time << std::endl;
 
         if (settings_.computeHeat) {
             computeTemperature();
@@ -119,10 +115,8 @@ void Computation::runSimulation() {
         // applyPreliminaryBoundaryValues();
 
         computeRightHandSide();
-        // auto startTime = std::chrono::high_resolution_clock::now();
+
         computePressure();
-        // auto endTime = std::chrono::high_resolution_clock::now();
-        // totalTime += std::chrono::duration<double>(endTime - startTime).count();
 
         cycleIterations.push_back(pressureSolver_->numberOfIterations());
         computeVelocities();

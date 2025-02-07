@@ -98,5 +98,4 @@ protected:
     std::array<double, 2> meshWidth_;
     double dt_;
     std::shared_ptr<Partitioning> partitioning_;
-    std::shared_ptr<PressureSolver> cg_;
 };

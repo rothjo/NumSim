@@ -22,7 +22,6 @@ add_executable(${PROJECT_NAME}
    pressureSolver/cg.cpp
    pressureSolver/parallel_cg.cpp
    pressureSolver/multigrid.cpp
-  #  pressureSolver/parallel_multigrid.cpp
    computation/computation.cpp
    computation/parallelComputation.cpp
    settings.cpp
