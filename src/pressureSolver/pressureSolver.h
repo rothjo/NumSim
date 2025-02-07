@@ -22,6 +22,12 @@ public:
     int numberOfIterations();
 
     std::vector<double> residualNormVector();
+
+    /**
+     * @brief Get the number of iterations needed to solve the pressure field variable.
+     */
+    std::vector<int> solverIterations();
+
 protected:
 
     /**
@@ -52,4 +58,6 @@ protected:
     double residualNorm2_;
     int numberOfIterations_;
     std::vector<double> residualNormVector_;
+    std::vector<int> solverIterations_; ///< Number of iterations for each multigrid cycle.
+
 };

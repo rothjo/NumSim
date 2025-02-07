@@ -57,3 +57,6 @@ int PressureSolver::numberOfIterations() {
 std::vector<double> PressureSolver::residualNormVector() {
     return residualNormVector_;
 }
+std::vector<int> PressureSolver::solverIterations() {
+    return solverIterations_;
+}

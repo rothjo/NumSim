@@ -1,7 +1,8 @@
 #include "computation.h"
 #include <cmath>
 #include <chrono>  
-#include <fstream> 
+#include <fstream>
+#include <numeric> 
 
 
 void Computation::initialize(int argc, char* argv[]) {
@@ -86,7 +87,7 @@ void Computation::runSimulation() {
         runtimeFile << "coarseGridIterations\n";
         runtimeFile << settings_.coarseGridIterations << "\n";
     }
-    runtimeFile << "TotalTime(pressureSolver only)\n";
+    runtimeFile << "TotalTime\n";
     // double totalTime = 0.0;
 
     // Start measuring runtime
@@ -96,7 +97,7 @@ void Computation::runSimulation() {
     // Loop over all time steps until t_end is reached
     while (time < (settings_.endTime - time_epsilon)) {  
     // for (int i = 0; i < 5; i++) {
-        
+        t_iter++;
         applyBoundaryValues();
         
         computeTimeStepWidth();
@@ -133,9 +134,38 @@ void Computation::runSimulation() {
         //     output = output + 0.1;
         // }
     }
+    
     auto endTime = std::chrono::high_resolution_clock::now();
     double totalTime = std::chrono::duration<double>(endTime - startTime).count();
     runtimeFile << totalTime << "\n";
+
+    runtimeFile << "Timesteps\n";
+    runtimeFile << t_iter << "\n";
+
+    if (settings_.pressureSolver == "Multigrid") {
+        std::vector<int> solverIterations = pressureSolver_->solverIterations();
+        runtimeFile << "NumberofCycles\n";
+        double totalCycles = std::accumulate(cycleIterations.begin(), cycleIterations.end(), 0);
+        runtimeFile << totalCycles << "\n";
+        double avgCyclePerTIter = totalCycles / t_iter;
+        runtimeFile << "avgCyclePerTIter\n";
+        runtimeFile << avgCyclePerTIter << "\n";
+        runtimeFile << "GaussSeidelCalls\n";
+        double numberofGSCalls = solverIterations.size();
+        runtimeFile << numberofGSCalls << "\n";
+        runtimeFile << "totalGSIter\n";
+        double numberofGSIter = std::accumulate(solverIterations.begin(), solverIterations.end(), 0);
+        runtimeFile << numberofGSIter << "\n";
+        runtimeFile << "avgGSIterPerCall\n";
+        runtimeFile << numberofGSIter/ numberofGSCalls << "\n";
+        runtimeFile << "avgGSperCycle\n";
+        runtimeFile << std::accumulate(solverIterations.begin(), solverIterations.end(), 0) / totalCycles << "\n";
+
+        runtimeFile << "solverIterations\n";
+        for (const int &iteration : solverIterations) {
+            runtimeFile << iteration << "\n";
+        }
+    }
     runtimeFile << "CycleIterations\n";
     for (const int &iteration : cycleIterations) {
         runtimeFile << iteration << "\n";
