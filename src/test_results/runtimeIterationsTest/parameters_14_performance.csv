@@ -1,0 +1,7 @@
+GridSize
+512
+PressureSolver
+CG
+TotalTime
+61200
+CycleIterations
