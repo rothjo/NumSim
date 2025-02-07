@@ -52,6 +52,7 @@ void Multigrid::vCycle(std::shared_ptr<Discretization> discretization) {
     if (discretization->nCells()[0] == std::pow(2, lowestLevel_)) {
         GaussSeidel coarsesmoother = GaussSeidel(discretization, epsilon_, coarseGridIterations_);
         coarsesmoother.solve();
+        solverIterations_.push_back(coarsesmoother.numberOfIterations());
         // std::cout << coarsesmoother.numberOfIterations() << "coarsest grid" << std::endl;
         // std::cout << lowestLevel_ << "coarsest grid" << discretization->nCells()[0] << std::endl;
         return;
@@ -60,6 +61,7 @@ void Multigrid::vCycle(std::shared_ptr<Discretization> discretization) {
     // Init gaussseidel, solve on discretization, eps, maximumNumberIter
     GaussSeidel smoother = GaussSeidel(discretization, epsilon_, smoothingIterations_);
     smoother.solve();
+    solverIterations_.push_back(smoother.numberOfIterations());
 
     // Compute residual with p, rhs
     FieldVariable residual = discretization->p();
@@ -94,6 +96,7 @@ void Multigrid::vCycle(std::shared_ptr<Discretization> discretization) {
 
     // Post-smoothing p, rhs
     smoother.solve();
+    solverIterations_.push_back(smoother.numberOfIterations());
 
 }
 
@@ -102,12 +105,14 @@ void Multigrid::wCycle(std::shared_ptr<Discretization> discretization) {
     if (discretization->nCells()[0] == std::pow(2, lowestLevel_)) {
         GaussSeidel coarsesmoother = GaussSeidel(discretization, epsilon_, coarseGridIterations_);
         coarsesmoother.solve();
+        solverIterations_.push_back(coarsesmoother.numberOfIterations());
         return;
     }
     // Pre-smoothing
     // Init gaussseidel, solve on discretization, eps, maximumNumberIter
     GaussSeidel smoother = GaussSeidel(discretization, epsilon_, smoothingIterations_);
     smoother.solve();
+    solverIterations_.push_back(smoother.numberOfIterations());
 
     // Compute residual with p, rhs
     FieldVariable residual = discretization->p();
@@ -172,6 +177,7 @@ void Multigrid::wCycle(std::shared_ptr<Discretization> discretization) {
 
     // Post-smoothing p, rhs
     smoother.solve();
+    solverIterations_.push_back(smoother.numberOfIterations());
 
 }
 

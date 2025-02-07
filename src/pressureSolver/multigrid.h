@@ -27,6 +27,7 @@ public:
      */
     void solve() override;
 
+
 private:
 
     void vCycle(std::shared_ptr<Discretization> discretization);
@@ -62,4 +63,5 @@ private:
     int maxLevel_; ///< Number of levels in the multigrid hierarchy.
     int smoothingIterations_; ///< Number of smoothing iterations.
     int coarseGridIterations_; ///< Number of iterations on the coarsest grid.
+
 };
