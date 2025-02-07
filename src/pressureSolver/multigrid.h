@@ -29,9 +29,16 @@ public:
 
 
 private:
-
+    /**
+     * @brief Perform a V-cycle on a given discretization.
+     * @param discretization The grid to perform the V-cycle on.
+     */
     void vCycle(std::shared_ptr<Discretization> discretization);
 
+    /**
+     * @brief Perform a W-cycle on a given discretization.
+     * @param discretization The grid to perform the W-cycle on.
+     */
     void wCycle(std::shared_ptr<Discretization> discretization);
 
     /**
@@ -48,19 +55,16 @@ private:
      */
     void restrictToCoarserGrid(FieldVariable& fineResidual, FieldVariable& coarseResidual, std::shared_ptr<Discretization> coarseDiscretization);
 
+    /**
+     * @brief Prolongate a correction from a coarser grid to a finer grid.
+     * @param coarseDiscretization The coarser grid.
+     * @param correction The correction to prolongate.
+     */
     void prolongation(std::shared_ptr<Discretization> coarseDiscretization, FieldVariable& correction);  
 
-    /**
-     * @brief Apply a correction to the current grid level.
-     * @param grid The grid to apply the correction to.
-     * @param correction The correction field variable.
-     */
-    // void applyCorrection(int level);
-
-    std::shared_ptr<Partitioning> partitioning_;
-    std::string cycle_;
-    int lowestLevel_;
-    int maxLevel_; ///< Number of levels in the multigrid hierarchy.
+    std::shared_ptr<Partitioning> partitioning_; ///< The partitioning object.
+    std::string cycle_; ///< The type of cycle to use (V or W).
+    int lowestLevel_; ///< The lowest level in the multigrid hierarchy.
     int smoothingIterations_; ///< Number of smoothing iterations.
     int coarseGridIterations_; ///< Number of iterations on the coarsest grid.
 
