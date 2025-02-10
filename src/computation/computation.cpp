@@ -65,36 +65,32 @@ void Computation::runSimulation() {
     int t_iter = 0;
     double time_epsilon = 1e-8;
     double output = 0.0;
-    std::vector<int> cycleIterations;
 
-    
-    std::ofstream runtimeFile(filename_ + "_performance.csv");
+    // // Write headers for csv output
+    // std::vector<int> cycleIterations;
+    // std::ofstream runtimeFile(filename_ + "_performance.csv");
+    // runtimeFile << "GridSize\n";
+    // runtimeFile << settings_.nCells[0] << "\n";
+    // runtimeFile << "PressureSolver\n";
+    // runtimeFile << settings_.pressureSolver << "\n";
+    // if (settings_.pressureSolver == "Multigrid") {
+    //     runtimeFile << "CycleType\n";
+    //     runtimeFile << settings_.multigridCycle << "\n";
+    //     runtimeFile << "LowestLevel\n";
+    //     runtimeFile << settings_.lowestLevel << "\n";
+    //     runtimeFile << "smoothingIterations\n";
+    //     runtimeFile << settings_.smoothingIterations << "\n";
+    //     runtimeFile << "coarseGridIterations\n";
+    //     runtimeFile << settings_.coarseGridIterations << "\n";
+    // }
+    // runtimeFile << "TotalTime\n";
 
-    // Write headers for csv output
-    runtimeFile << "GridSize\n";
-    runtimeFile << settings_.nCells[0] << "\n";
-    runtimeFile << "PressureSolver\n";
-    runtimeFile << settings_.pressureSolver << "\n";
-    if (settings_.pressureSolver == "Multigrid") {
-        runtimeFile << "CycleType\n";
-        runtimeFile << settings_.multigridCycle << "\n";
-        runtimeFile << "LowestLevel\n";
-        runtimeFile << settings_.lowestLevel << "\n";
-        runtimeFile << "smoothingIterations\n";
-        runtimeFile << settings_.smoothingIterations << "\n";
-        runtimeFile << "coarseGridIterations\n";
-        runtimeFile << settings_.coarseGridIterations << "\n";
-    }
-    runtimeFile << "TotalTime\n";
-    // double totalTime = 0.0;
-
-    // Start measuring runtime
-    auto startTime = std::chrono::high_resolution_clock::now();
+    // // Start measuring runtime
+    // auto startTime = std::chrono::high_resolution_clock::now();
 
     
     // Loop over all time steps until t_end is reached
     while (time < (settings_.endTime - time_epsilon)) {  
-    // for (int i = 0; i < 5; i++) {
         t_iter++;
         applyBoundaryValues();
         
@@ -118,10 +114,12 @@ void Computation::runSimulation() {
 
         computePressure();
 
-        cycleIterations.push_back(pressureSolver_->numberOfIterations());
+        // for csv output
+        // cycleIterations.push_back(pressureSolver_->numberOfIterations());
+
         computeVelocities();
 
-        // Output
+        // Output for paraview/txt
         // if (time >= output) {
         //     (*outputWriterParaview_).writeFile(time); // Output
         //     // outputWriterText_->writeFile(time); // Output
@@ -129,49 +127,50 @@ void Computation::runSimulation() {
         // }
     }
     
-    auto endTime = std::chrono::high_resolution_clock::now();
-    double totalTime = std::chrono::duration<double>(endTime - startTime).count();
-    runtimeFile << totalTime << "\n";
+    // Output for csv
+    // auto endTime = std::chrono::high_resolution_clock::now();
+    // double totalTime = std::chrono::duration<double>(endTime - startTime).count();
+    // runtimeFile << totalTime << "\n";
 
-    runtimeFile << "Timesteps\n";
-    runtimeFile << t_iter << "\n";
+    // runtimeFile << "Timesteps\n";
+    // runtimeFile << t_iter << "\n";
 
-    if (settings_.pressureSolver == "Multigrid") {
-        std::vector<int> solverIterations = pressureSolver_->solverIterations();
-        runtimeFile << "NumberofCycles\n";
-        double totalCycles = std::accumulate(cycleIterations.begin(), cycleIterations.end(), 0);
-        runtimeFile << totalCycles << "\n";
-        double avgCyclePerTIter = totalCycles / t_iter;
-        runtimeFile << "avgCyclePerTIter\n";
-        runtimeFile << avgCyclePerTIter << "\n";
-        runtimeFile << "GaussSeidelCalls\n";
-        double numberofGSCalls = solverIterations.size();
-        runtimeFile << numberofGSCalls << "\n";
-        runtimeFile << "totalGSIter\n";
-        double numberofGSIter = std::accumulate(solverIterations.begin(), solverIterations.end(), 0);
-        runtimeFile << numberofGSIter << "\n";
-        runtimeFile << "avgGSIterPerCall\n";
-        runtimeFile << numberofGSIter/ numberofGSCalls << "\n";
-        runtimeFile << "avgGSperCycle\n";
-        runtimeFile << std::accumulate(solverIterations.begin(), solverIterations.end(), 0) / totalCycles << "\n";
+    // if (settings_.pressureSolver == "Multigrid") {
+    //     std::vector<int> solverIterations = pressureSolver_->solverIterations();
+    //     runtimeFile << "NumberofCycles\n";
+    //     double totalCycles = std::accumulate(cycleIterations.begin(), cycleIterations.end(), 0);
+    //     runtimeFile << totalCycles << "\n";
+    //     double avgCyclePerTIter = totalCycles / t_iter;
+    //     runtimeFile << "avgCyclePerTIter\n";
+    //     runtimeFile << avgCyclePerTIter << "\n";
+    //     runtimeFile << "GaussSeidelCalls\n";
+    //     double numberofGSCalls = solverIterations.size();
+    //     runtimeFile << numberofGSCalls << "\n";
+    //     runtimeFile << "totalGSIter\n";
+    //     double numberofGSIter = std::accumulate(solverIterations.begin(), solverIterations.end(), 0);
+    //     runtimeFile << numberofGSIter << "\n";
+    //     runtimeFile << "avgGSIterPerCall\n";
+    //     runtimeFile << numberofGSIter/ numberofGSCalls << "\n";
+    //     runtimeFile << "avgGSperCycle\n";
+    //     runtimeFile << std::accumulate(solverIterations.begin(), solverIterations.end(), 0) / totalCycles << "\n";
 
-        runtimeFile << "solverIterations\n";
-        for (const int &iteration : solverIterations) {
-            runtimeFile << iteration << "\n";
-        }
-    }
-    runtimeFile << "CycleIterations\n";
-    for (const int &iteration : cycleIterations) {
-        runtimeFile << iteration << "\n";
-    }
-    // runtimeFile << "Residuals\n";
-    // for (const double &residual : pressureSolver_->residualNormVector()) {
-    //     runtimeFile << residual << "\n";
+    //     runtimeFile << "solverIterations\n";
+    //     for (const int &iteration : solverIterations) {
+    //         runtimeFile << iteration << "\n";
+    //     }
     // }
+    // runtimeFile << "CycleIterations\n";
+    // for (const int &iteration : cycleIterations) {
+    //     runtimeFile << iteration << "\n";
+    // }
+    // // runtimeFile << "Residuals\n";
+    // // for (const double &residual : pressureSolver_->residualNormVector()) {
+    // //     runtimeFile << residual << "\n";
+    // // }
     
-    runtimeFile.close();
+    // runtimeFile.close();
 
-    std::cout << "Performance results saved for " << filename_ << std::endl;
+    // std::cout << "Performance results saved for " << filename_ << std::endl;
 }
 
 void Computation::computeTimeStepWidth() {

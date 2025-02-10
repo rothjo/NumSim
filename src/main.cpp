@@ -21,25 +21,28 @@
 
 int main(int argc, char *argv[])
 {
-  // serial program
-  // measure time
-  double start = MPI_Wtime();
-  MPI_Init(&argc, &argv);
-  Computation comp;
-  comp.initialize(argc, argv);
-  comp.runSimulation();
-  MPI_Finalize();
-  double end = MPI_Wtime();
-  std::cout << "Time: " << end - start << std::endl;
-  
+  Settings settings;
+  settings.loadFromFile(argv[1]);
+  if (!settings.computeParallel){
+    // serial program
+    // measure time
+      double start = MPI_Wtime();
+      MPI_Init(&argc, &argv);
+      Computation comp;
+      comp.initialize(argc, argv);
+      comp.runSimulation();
+      MPI_Finalize();
+      double end = MPI_Wtime();
+      std::cout << "Time: " << end - start << std::endl;
+  } else {
+      // parallel program
+      MPI_Init(&argc, &argv);
+      ParallelComputation parallelcomp;
+      parallelcomp.initialize(argc, argv);
+      parallelcomp.runSimulation();
+      MPI_Finalize();
 
-  // parallel program
-  // MPI_Init(&argc, &argv);
-  // // MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
-  // ParallelComputation parallelcomp;
-  // parallelcomp.initialize(argc, argv);
-  // parallelcomp.runSimulation();
-  // MPI_Finalize();
+  }
 
   return EXIT_SUCCESS;
 }

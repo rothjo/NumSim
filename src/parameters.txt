@@ -11,6 +11,8 @@ gX = 0.0              # external forces, set to (gX,gY) = (0,-9.81) to account f
 gY = 0.0
 beta = 0.001           # dimensionless heat coeff
 initialTemp = 300     # initial Temperature
+computeParallel = false     # use parallel or not, true or false. Multigrid only serial!
+getPerformanceOutput = false # get performance output csv files or not 
 
 # Dirichlet boundary conditions
 dirichletBottomX = 0
@@ -43,5 +45,5 @@ maximumNumberOfIterations = 1e4    # maximum number of iterations in the solver
 multigridCycle = V    # which cycle to use, possible values: V, W
 lowestLevel = 1      # Set the lowest level to solve coarse grid equation completely, 1 equals 2x2, 2 equals 4x4 ...
                      # must be smaller than possible max level!
-smoothingIterations  = 2
-coarseGridIterations = 2    
+smoothingIterations  = 2 # number of smoothing iterations 
+coarseGridIterations = 2 # number of maxIteration to solve coarse grid equation

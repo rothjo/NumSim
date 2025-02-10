@@ -140,6 +140,17 @@ void Settings::loadFromFile(std::string filename)
         std::cout << "Unknown value for computeHeat: " << value << std::endl;
       }
     }
+    else if (parameterName == "computeParallel"){
+      if(value == "true"){
+        computeParallel= true;
+      }
+      else if(value == "false"){
+        computeParallel = false;
+      }
+      else{
+        std::cout << "Unknown value for computeParallel: " << value << std::endl;
+      }
+    }
     else if (parameterName == "alpha"){
       alpha = atof(value.c_str());
     }

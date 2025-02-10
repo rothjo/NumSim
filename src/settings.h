@@ -23,6 +23,7 @@ struct Settings
   bool computeHeat = false;         //< if heat/temperature schould be computed
   double alpha = 0.5;                //< factor for donor-cell scheme
   double gamma = 0.5;                //< factor for donor-cell scheme (temperature)
+  bool computeParallel = false;     //< if the computation should be parallelized
 
   std::array<double,2> dirichletBcBottom;  //< prescribed values of u,v at bottom of domain
   std::array<double,2> dirichletBcTop;     //< prescribed values of u,v at top of domain
